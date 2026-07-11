@@ -27,16 +27,8 @@
 /// skeleton and the eventual bench agree on the x-axis.
 pub const REVOCATION_BATCH_SIZES: [usize; 3] = [100, 1_000, 10_000];
 
-/// Marker that E3 is intentionally unimplemented in this pass. Referenced by the
-/// harness/README so "E3 = skeleton" is a checkable fact, not a silent gap.
-pub const E3_STATUS: &str = "skeleton-only (cut-first); crate=vb_accumulator; not wired";
-
-/// Placeholder for the non-membership timing entry point. Wiring this against
-/// `vb_accumulator`'s `NonMembershipWitness` / `Accumulator` API is the
-/// Mac-mini follow-up; it MUST NOT return a fabricated latency.
-pub fn measure_non_membership() -> ! {
-    unimplemented!(
-        "E3 is cut-first: implement against vb_accumulator on the Mac mini and \
-         report only measured latencies (see module docs)."
-    )
-}
+/// Status marker, kept as a checkable fact for the harness/README.
+/// Wired 2026-07-11: the `e3-bench` binary measures non-membership gen/verify and
+/// epoch-root / omega-publish / witness-update for each batch size against
+/// `vb_accumulator` 0.29 (single-core; see `src/bin/e3_bench.rs`).
+pub const E3_STATUS: &str = "wired; bin=e3-bench; crate=vb_accumulator-0.29; single-core; measured";

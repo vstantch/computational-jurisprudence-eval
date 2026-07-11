@@ -63,6 +63,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
+name = "ark-bls12-381"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c775f0d12169cba7aae4caeb547bb6a50781c7449a8aa53793827c9ec4abf488"
+dependencies = [
+ "ark-ec",
+ "ark-ff",
+ "ark-serialize",
+ "ark-std",
+]
+
+[[package]]
 name = "ark-ec"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -76,7 +88,6 @@ dependencies = [
  "hashbrown",
  "itertools 0.10.5",
  "num-traits",
- "rayon",
  "zeroize",
 ]
 
@@ -96,7 +107,6 @@ dependencies = [
  "num-bigint",
  "num-traits",
  "paste",
- "rayon",
  "rustc_version",
  "zeroize",
 ]
@@ -135,7 +145,6 @@ dependencies = [
  "ark-std",
  "derivative",
  "hashbrown",
- "rayon",
 ]
 
 [[package]]
@@ -180,7 +189,6 @@ checksum = "94893f1e0c6eeab764ade8dc4c0db24caf4fe7cbbaafc0eba0a9030f447b5185"
 dependencies = [
  "num-traits",
  "rand",
- "rayon",
 ]
 
 [[package]]
@@ -427,31 +435,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crossbeam-deque"
-version = "0.8.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5181e0de7b61eb03a81e347d6dd8797bae9da5146707b51077e2d71a54ec0ceb"
-dependencies = [
- "crossbeam-epoch",
- "crossbeam-utils",
-]
-
-[[package]]
-name = "crossbeam-epoch"
-version = "0.9.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d6914041f254d6e9176c01941b21115dcfb7089e55135a35411081bd106ef3f"
-dependencies = [
- "crossbeam-utils",
-]
-
-[[package]]
-name = "crossbeam-utils"
-version = "0.8.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61803da095bee82a81bb1a452ecc25d3b2f1416d1897eb86430c6159ef717c17"
-
-[[package]]
 name = "crunchy"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -616,7 +599,6 @@ dependencies = [
  "hkdf",
  "itertools 0.14.0",
  "num",
- "rayon",
  "serde",
  "serde_with",
  "sha2 0.10.9",
@@ -652,6 +634,11 @@ dependencies = [
 name = "e3-accumulator"
 version = "0.1.0"
 dependencies = [
+ "ark-bls12-381",
+ "ark-ec",
+ "ark-ff",
+ "ark-serialize",
+ "ark-std",
  "vb_accumulator",
 ]
 
@@ -906,7 +893,6 @@ dependencies = [
  "digest 0.10.7",
  "dock_crypto_utils",
  "itertools 0.14.0",
- "rayon",
  "schnorr_pok",
  "serde",
  "serde_with",
@@ -1036,7 +1022,6 @@ dependencies = [
  "digest 0.10.7",
  "dock_crypto_utils",
  "itertools 0.14.0",
- "rayon",
  "schnorr_pok",
  "serde",
  "serde_with",
@@ -1236,26 +1221,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rayon"
-version = "1.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb39b166781f92d482534ef4b4b1b2568f42613b53e5b6c160e24cfbfa30926d"
-dependencies = [
- "either",
- "rayon-core",
-]
-
-[[package]]
-name = "rayon-core"
-version = "1.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22e18b0f0062d30d4230b2e85ff77fdfe4326feb054b9783a3460d8435c8ab91"
-dependencies = [
- "crossbeam-deque",
- "crossbeam-utils",
-]
-
-[[package]]
 name = "regex"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1324,7 +1289,6 @@ dependencies = [
  "ark-std",
  "digest 0.10.7",
  "dock_crypto_utils",
- "rayon",
  "serde",
  "serde_with",
  "zeroize",
@@ -1358,7 +1322,6 @@ dependencies = [
  "ark-std",
  "digest 0.10.7",
  "dock_crypto_utils",
- "rayon",
  "schnorr_pok",
  "serde",
  "serde_with",
@@ -1490,7 +1453,6 @@ dependencies = [
  "digest 0.10.7",
  "dock_crypto_utils",
  "oblivious_transfer_protocols",
- "rayon",
  "schnorr_pok",
  "secret_sharing_and_dkg",
  "serde",
@@ -1648,7 +1610,6 @@ dependencies = [
  "dock_crypto_utils",
  "kvac",
  "oblivious_transfer_protocols",
- "rayon",
  "schnorr_pok",
  "secret_sharing_and_dkg",
  "serde",

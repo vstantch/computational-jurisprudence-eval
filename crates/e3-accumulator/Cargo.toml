@@ -26,4 +26,17 @@ description = "E3 (optional, cut-first) accumulator revocation microbenchmark â€
 # Left UNPINNED-to-a-lockfile-only here on purpose: E3 is cut-first, so the crate
 # is declared (and justified) but nothing is compiled against it in the harness
 # yet â€” see the `cut-first` note in src/lib.rs. Wiring is a Mac-mini follow-up.
-vb_accumulator = { workspace = true }
+# Wired 2026-07-11 (Mac-mini follow-up). Built WITHOUT the crate's default
+# `parallel` (rayon) feature so E3 reports single-core costs comparable to E1;
+# the CSV stamps parallel=false. Flip features to ["std","parallel"] to measure
+# the multi-core path.
+vb_accumulator = { version = "0.29.0", default-features = false, features = ["std"] }
+ark-bls12-381 = "0.4.0"
+ark-ec = "0.4.2"
+ark-ff = "0.4.2"
+ark-std = { version = "0.4.0", features = ["std"] }
+ark-serialize = "0.4.2"
+
+[[bin]]
+name = "e3-bench"
+path = "src/bin/e3_bench.rs"

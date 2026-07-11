@@ -68,9 +68,17 @@ plots:
 
 # --- E3 (cut-first skeleton) ------------------------------------------------
 
-# Only type-checks the skeleton; nothing is wired (see crates/e3-accumulator).
+# Type-check the E3 crate (deps + bench compile).
 e3-check:
     cargo check -p e3-accumulator
+
+# Run the E3 accumulator revocation microbenchmark (single-core, parallel off).
+# Measures non-membership gen/verify + epoch-root / omega-publish / witness-update
+# for batch revocations 10^2/10^3/10^4 against vb_accumulator 0.29. Correctness
+# gates run before every timing loop (measured, never estimated).
+bench-e3:
+    cargo build -p e3-accumulator --release --bin e3-bench
+    ./target/release/e3-bench {{results}}/e3-accum_{{host}}_{{stamp}}.csv
 
 clean:
     rm -rf {{plots_dir}}/*.png

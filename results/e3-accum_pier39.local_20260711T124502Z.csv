@@ -1,0 +1,12 @@
+schema,ts_unix_s,host,os,arch,cpu,runtime,sandbox,library,parallel,operation,batch_size,base_size,n_iter,p50_ns,p95_ns,p99_ns,mean_ns,proof_bytes
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,non_membership_gen,0,20000,50,551708,696959,710334,545420,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,non_membership_verify,0,20000,200,1027375,1202292,1284125,1050075,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,epoch_root_update,100,20000,300,72042,86375,94333,75121,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,omega_publish,100,20000,200,2589584,2718250,2979750,2597712,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,witness_update,100,20000,300,1787916,1896208,1915125,1799864,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,epoch_root_update,1000,20000,150,83500,92125,99500,86361,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,omega_publish,1000,20000,100,35022708,35765083,36021250,35049418,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,witness_update,1000,20000,150,10907125,11195750,11988417,10951573,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,epoch_root_update,10000,20000,60,219208,244250,249167,222820,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,omega_publish,10000,20000,30,2564601791,3021910833,3224286041,2604842705,80
+e3-accum-v1,1783773902,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,witness_update,10000,20000,60,82268292,84247208,84606750,82628865,80
