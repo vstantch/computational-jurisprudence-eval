@@ -1,0 +1,14 @@
+# Rust build output (CARGO_TARGET_DIR is set to /tmp/pct-target in the sandbox).
+/target/
+# OPA static binary — platform-specific, fetched by scripts/opa_e1.sh, not vendored.
+/bin/
+# Python caches / venvs
+__pycache__/
+*.pyc
+.venv/
+# Transient logs
+*.log
+.DS_Store
+
+# NOTE: Cargo.lock, workloads/*.json, results/*.csv and plots/*.png are COMMITTED
+# on purpose (reproducibility spec: lockfiles + seeded fixtures + result CSVs).

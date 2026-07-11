@@ -1,0 +1,29 @@
+[package]
+name = "e3-accumulator"
+version = "0.1.0"
+edition = "2021"
+description = "E3 (optional, cut-first) accumulator revocation microbenchmark — CRATE SKELETON ONLY. Nothing is wired; see src/lib.rs for the crate choice and rationale."
+
+[dependencies]
+# E3 crate choice: vb_accumulator (Dock Network's `crypto` monorepo).
+#
+# Rationale (plan §1 E3 asks for "a maintained Rust accumulator / ALLOSAUR-style
+# lib — Cowork session to pick the maintained one"):
+#
+#  * It is a *universal* pairing-based (bilinear-map, KB-family) dynamic
+#    accumulator that provides BOTH membership AND **non-membership** witnesses —
+#    E3 specifically measures "non-membership proof gen/verify", which the common
+#    `accumulator` crate name on crates.io does NOT provide (that crate is an
+#    unrelated size/time-bounded key-value store).
+#  * It exposes exactly the operations E3 needs to time on our own hardware:
+#    witness generation, single and BATCH add/remove with witness-update info
+#    (`Omega`), and public accumulator (epoch-root) updates — matching E3's
+#    "witness-update cost after batch revocations of 10^2/10^3/10^4" and
+#    "epoch-root update".
+#  * It is the accumulator underlying the ALLOSAUR line of work the plan gestures
+#    at (Dock's `crypto` stack), and is actively maintained (0.29.x, 2025).
+#
+# Left UNPINNED-to-a-lockfile-only here on purpose: E3 is cut-first, so the crate
+# is declared (and justified) but nothing is compiled against it in the harness
+# yet — see the `cut-first` note in src/lib.rs. Wiring is a Mac-mini follow-up.
+vb_accumulator = { workspace = true }

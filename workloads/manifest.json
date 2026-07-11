@@ -1,0 +1,146 @@
+{
+  "configs": [
+    {
+      "depth": 1,
+      "fanout": 1,
+      "file": "graph_d1_f1.json",
+      "n_allow": 100000,
+      "n_violation": 3
+    },
+    {
+      "depth": 1,
+      "fanout": 10,
+      "file": "graph_d1_f10.json",
+      "n_allow": 100000,
+      "n_violation": 3
+    },
+    {
+      "depth": 1,
+      "fanout": 100,
+      "file": "graph_d1_f100.json",
+      "n_allow": 100000,
+      "n_violation": 3
+    },
+    {
+      "depth": 2,
+      "fanout": 1,
+      "file": "graph_d2_f1.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 2,
+      "fanout": 10,
+      "file": "graph_d2_f10.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 2,
+      "fanout": 100,
+      "file": "graph_d2_f100.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 4,
+      "fanout": 1,
+      "file": "graph_d4_f1.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 4,
+      "fanout": 10,
+      "file": "graph_d4_f10.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 4,
+      "fanout": 100,
+      "file": "graph_d4_f100.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 6,
+      "fanout": 1,
+      "file": "graph_d6_f1.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 6,
+      "fanout": 10,
+      "file": "graph_d6_f10.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 6,
+      "fanout": 100,
+      "file": "graph_d6_f100.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 8,
+      "fanout": 1,
+      "file": "graph_d8_f1.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 8,
+      "fanout": 10,
+      "file": "graph_d8_f10.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 8,
+      "fanout": 100,
+      "file": "graph_d8_f100.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 10,
+      "fanout": 1,
+      "file": "graph_d10_f1.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 10,
+      "fanout": 10,
+      "file": "graph_d10_f10.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    },
+    {
+      "depth": 10,
+      "fanout": 100,
+      "file": "graph_d10_f100.json",
+      "n_allow": 100000,
+      "n_violation": 4
+    }
+  ],
+  "depths": [
+    1,
+    2,
+    4,
+    6,
+    8,
+    10
+  ],
+  "fanouts": [
+    1,
+    10,
+    100
+  ],
+  "n_allow_per_config": 100000,
+  "schema": "pct-eval/e1-manifest@1",
+  "seed": 12648430
+}

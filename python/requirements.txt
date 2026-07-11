@@ -1,0 +1,11 @@
+# Pinned Python deps for the E1 harness (plan §3: "python requirements with
+# versions"). Versions are the ones the sandbox measured with; the Mac run
+# should reproduce or record its own in each CSV's `runtime` column.
+#
+# NOTE: presidio_x402 (the capability-grant@1 artifact under test) is NOT pip-
+# installed here — it is imported from the shipped x402 tools checkout via
+# PCT_X402_SRC (default ../../presidio-hardened-x402/tools/src). The grant bench
+# benches it AS-IS from its own repo, per the owner's decision.
+cryptography==49.0.0
+matplotlib==3.10.9
+numpy==2.2.6

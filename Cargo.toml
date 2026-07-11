@@ -1,0 +1,30 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/workload-gen",
+    "crates/e1-biscuit",
+    "crates/e3-accumulator",
+]
+# E3 is cut-first (skeleton only): keep it a workspace member so its crate
+# choice is recorded and locked in Cargo.lock, but exclude it from the default
+# build so `cargo build` / the E1 benches do not compile the heavy arkworks
+# dependency tree. Build it explicitly with `-p e3-accumulator` on the Mac mini
+# when E3 is actually wired.
+default-members = [
+    "crates/workload-gen",
+    "crates/e1-biscuit",
+]
+
+# Shared, pinned dependency versions for the whole workspace. Lockfile
+# (Cargo.lock) is committed per the reproducibility spec (plan §3).
+[workspace.dependencies]
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+biscuit-auth = "6.0.0"
+criterion = { version = "0.5.1", default-features = false }
+vb_accumulator = "0.29.0"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1

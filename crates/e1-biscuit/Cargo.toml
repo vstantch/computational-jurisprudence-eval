@@ -1,0 +1,24 @@
+[package]
+name = "e1-biscuit"
+version = "0.1.0"
+edition = "2021"
+description = "E1 Biscuit treatment: build attenuated delegation chains from the canonical workload and measure exercise-time authorize() latency, throughput, and token size vs depth."
+
+[[bin]]
+name = "e1-biscuit"
+path = "src/main.rs"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+biscuit-auth = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+
+# Criterion micro-bench for methodological cross-check (plan §1 E1 says
+# "criterion"). The workhorse that emits the CSV is the binary; this bench gives
+# a rigorous single-config number to sanity-check the binary's percentiles.
+[[bench]]
+name = "authorize"
+harness = false

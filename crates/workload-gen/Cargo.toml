@@ -1,0 +1,13 @@
+[package]
+name = "workload-gen"
+version = "0.1.0"
+edition = "2021"
+description = "Canonical seeded delegation-graph workload generator for E1 (consumed by all three systems: Biscuit, capability-grant@1, OPA/Rego)."
+
+[[bin]]
+name = "workload-gen"
+path = "src/main.rs"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
