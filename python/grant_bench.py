@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import gc
 import json
+import os
 import sys
 import time
 from datetime import datetime, timezone
@@ -126,6 +127,12 @@ def run_bench(workloads: str, out_csv: str) -> None:
             json.dumps(chain, separators=(",", ":"), ensure_ascii=False).encode()
         )
         allow = [e for e in fx["exercises"] if e["expect"] == "allow"]
+        # PCT_MAX_PER_CONFIG caps the timed stream so the repeated-execution
+        # variability sweep stays affordable; unset or 0 keeps every allow
+        # exercise, i.e. the official run.
+        cap = int(os.environ.get("PCT_MAX_PER_CONFIG", "0") or 0)
+        if cap > 0:
+            allow = allow[:cap]
 
         # Warmup (also asserts the happy path really allows).
         for e in allow[:200]:
@@ -172,7 +179,6 @@ def run_bench(workloads: str, out_csv: str) -> None:
             f"p99={common.percentile_ns(nanos,99)}ns token={token_bytes}B"
         )
 
-    import os
     os.makedirs(os.path.dirname(out_csv) or ".", exist_ok=True)
     with open(out_csv, "w") as f:
         f.write("\n".join(rows) + "\n")

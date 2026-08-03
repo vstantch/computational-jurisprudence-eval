@@ -1,0 +1,12 @@
+schema,ts_unix_s,host,os,arch,cpu,runtime,sandbox,library,parallel,operation,batch_size,base_size,n_iter,p50_ns,p95_ns,p99_ns,mean_ns,proof_bytes
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,non_membership_gen,0,20000,50,358708,367875,369792,358219,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,non_membership_verify,0,20000,200,1098917,1120708,1127000,1102443,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,epoch_root_update,100,20000,300,81583,86458,90167,82081,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,omega_publish,100,20000,200,2808958,2863166,2889250,2812820,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,witness_update,100,20000,300,1965875,2040042,2055542,1978445,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,epoch_root_update,1000,20000,150,94000,99792,107375,92861,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,omega_publish,1000,20000,100,37066750,38118583,39517541,37207300,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,witness_update,1000,20000,150,11912500,12407042,20730708,12103556,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,epoch_root_update,10000,20000,60,242292,245833,259500,243454,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,omega_publish,10000,20000,30,2713208541,2956513708,3010651000,2715868811,80
+e3-accum-v1,1785745240,unknown,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,vb_accumulator-0.29.0,false,witness_update,10000,20000,60,87270375,90148625,91137125,87538614,80

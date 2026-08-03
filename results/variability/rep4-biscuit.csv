@@ -1,0 +1,19 @@
+schema,ts_utc,host,os,arch,cpu,runtime,sandbox,system,config,depth,fanout,n_exercises,p50_ns,p95_ns,p99_ns,mean_ns,throughput_ops_s,token_bytes
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,10,1,10000,332417,366250,865834,340953,2932.9,3285
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,10,10,10000,315375,338208,348458,316373,3160.8,3285
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,10,100,10000,318583,341292,352625,319336,3131.5,3285
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,1,1,10000,43709,46041,51000,42766,23383.0,387
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,1,10,10000,44125,47209,52291,43394,23044.3,387
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,1,100,10000,42542,46958,51417,42640,23452.1,387
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,2,1,10000,74042,81709,89792,74330,13453.5,689
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,2,10,10000,74375,81459,88834,74372,13445.9,689
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,2,100,10000,72792,79250,85000,72802,13735.7,689
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,4,1,10000,133625,142917,151334,133010,7518.2,1308
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,4,10,10000,134459,144042,151333,133668,7481.2,1308
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,4,100,10000,138084,147708,167875,138201,7235.8,1308
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,6,1,10000,196875,208584,227917,197007,5076.0,1947
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,6,10,10000,197750,209916,220041,196831,5080.5,1947
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,6,100,10000,199500,212416,223334,199798,5005.1,1947
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,8,1,10000,257750,273958,285542,257885,3877.7,2606
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,8,10,10000,257959,273458,281792,257637,3881.4,2606
+pct-eval/e1@1,2026-08-03T09:35:03Z,pier39.local,macos,aarch64,Apple M4 (4P+6E),rustc-1.96.1,false,biscuit,na,8,100,10000,262500,283500,319167,264445,3781.5,2606

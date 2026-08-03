@@ -205,3 +205,40 @@ Mac-mini follow-up; no number it could produce enters the paper until measured.
 * Optionally wire E3 against `vb_accumulator` and add measured Table-1 rows.
 * Commit the official `results/*.csv` + `plots/*.png` alongside these indicative
   ones (clearly separated by the `sandbox` column).
+
+## Run-to-run variability sweep (added for the Future Internet revision, 2026-08-03)
+
+Reviewers of the *Future Internet* submission asked whether the reported percentiles came from a
+single execution per configuration. They did. Each experiment was therefore re-executed as **five
+independent runs**, each in a fresh process, and for E1 with a fresh OPA server and freshly created
+toxiproxy proxies, so that no thermal, page-cache, allocator, or connection state carries across
+repetitions.
+
+```bash
+# E1: 5 repetitions, 10^4 exercises per config, 2x10^3 for the injected-delay configs.
+# Writes results/variability/rep{1..5}-{biscuit,grant,opa}.csv
+PCT_CPU="Apple M4 (4P+6E)" PCT_SANDBOX=false PCT_DELAY_METHOD=toxiproxy \
+  ./scripts/repeat_e1.sh 5 10000 2000
+
+# E3: 5 repetitions at the official iteration counts.
+for i in 1 2 3 4 5; do ./target/release/e3-bench results/variability-e3/rep${i}-e3.csv; done
+
+# E2: 5 repetitions of the full 2,000-triple corpus replay (run from the x402 tools tree).
+# Writes results/variability-e2/rep{1..5}-e2-replay.csv
+
+# Summaries (mean / SD / CV / Student-t 95% CI across repetitions):
+python3 python/variability.py results/variability          # E1, all 30 configurations
+python3 python/mkvariability_table.py                      # the paper's Table 8
+```
+
+`PCT_MAX_PER_CONFIG` (new) caps the timed exercise stream in the Biscuit and grant@1 benches so that
+five full sweeps stay affordable; unset or `0` means "every allow exercise in the fixture", which is
+what the official run uses. The headline tables in the paper remain the single full-scale official
+run; the repetitions are an uncertainty statement about it, not a replacement for it.
+
+**What the sweep showed.** Median latencies are stable: across all 30 E1 configurations the p50
+coefficient of variation has median 1.9 % and never exceeds 5.0 %, and the repetition means agree
+with the official single run to within 6.0 % everywhere. Tails are not: the p99 coefficient of
+variation has median 4.6 % and a worst case of 49 % (Biscuit, depth 10), because the tail of a
+microsecond-scale in-process operation is dominated by scheduling and allocator behaviour that
+differs between executions. No claim in the paper rests on an E1 tail figure.

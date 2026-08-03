@@ -1,0 +1,19 @@
+schema,ts_utc,host,os,arch,cpu,runtime,sandbox,system,config,depth,fanout,n_exercises,p50_ns,p95_ns,p99_ns,mean_ns,throughput_ops_s,token_bytes
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,10,1,10000,1700250,1748542,1821875,1708756,585.2,7343
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,10,10,10000,1715041,1772667,1817583,1720662,581.2,7343
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,10,100,10000,1718750,1771125,1805458,1723449,580.2,7343
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,1,1,10000,175000,180875,185417,173641,5759.0,665
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,1,10,10000,177666,184500,191833,176326,5671.3,665
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,1,100,10000,174292,178625,184750,172531,5796.0,665
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,2,1,10000,350875,369083,417000,355596,2812.2,1387
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,2,10,10000,347458,361125,371584,348358,2870.6,1387
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,2,100,10000,343709,354125,363458,343881,2908.0,1387
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,4,1,10000,691000,707542,720458,691763,1445.6,2846
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,4,10,10000,689833,712625,728209,691115,1446.9,2846
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,4,100,10000,694667,708667,723000,694555,1439.8,2846
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,6,1,10000,1033500,1060750,1084417,1035439,965.8,4325
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,6,10,10000,1043667,1123541,1553750,1082885,923.5,4325
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,6,100,10000,1046375,1087709,1116083,1051840,950.7,4325
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,8,1,10000,1395167,1444375,1502625,1403142,712.7,5824
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,8,10,10000,1393792,1444083,1511291,1402697,712.9,5824
+pct-eval/e1@1,2026-08-03T08:52:04Z,pier39.local,darwin,arm64,Apple M4 (4P+6E),cpython-3.11.15,false,grant1,na,8,100,10000,1399041,1447958,1515000,1408653,709.9,5824

@@ -135,11 +135,18 @@ fn run_bench(dir: &str, out_csv: &str) {
         let token_bytes = tokens[0].len();
 
         // Allow-stream only for timing (happy authorize path).
-        let allow: Vec<_> = fx
+        // PCT_MAX_PER_CONFIG caps the timed stream so the repeated-execution
+        // variability sweep (scripts/repeat_e1.sh) stays affordable; unset or
+        // 0 means "every allow exercise in the fixture", i.e. the official run.
+        let mut allow: Vec<_> = fx
             .exercises
             .iter()
             .filter(|e| e.expect == "allow")
             .collect();
+        let cap: usize = env_or("PCT_MAX_PER_CONFIG", "0").parse().unwrap_or(0);
+        if cap > 0 && allow.len() > cap {
+            allow.truncate(cap);
+        }
 
         // Warmup.
         for e in allow.iter().take(200) {
