@@ -1,0 +1,19 @@
+schema,ts_utc,host,os,arch,cpu,runtime,sandbox,system,config,depth,fanout,n_exercises,p50_ns,p95_ns,p99_ns,mean_ns,throughput_ops_s,token_bytes
+pct-eval/e1@1,2026-08-11T13:04:14Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,local,10,1,100000,961442,1541876,2360986,1021003,979.4,2529
+pct-eval/e1@1,2026-08-11T13:04:14Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,local,1,1,100000,591819,884563,1515547,618964,1615.6,378
+pct-eval/e1@1,2026-08-11T13:04:14Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,local,2,1,100000,652156,976515,1707094,685335,1459.1,597
+pct-eval/e1@1,2026-08-11T13:04:14Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,local,4,1,100000,703111,1039139,1676698,737477,1356.0,1050
+pct-eval/e1@1,2026-08-11T13:04:14Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,local,6,1,100000,816160,1342949,2533671,903871,1106.4,1523
+pct-eval/e1@1,2026-08-11T13:04:14Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,local,8,1,100000,884177,1399190,2203245,939652,1064.2,2016
+pct-eval/e1@1,2026-08-11T13:12:31Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,5ms,10,1,10000,6710376,7453109,8395088,6808828,146.9,2529
+pct-eval/e1@1,2026-08-11T13:12:31Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,5ms,1,1,10000,6386099,6670441,7301900,6422673,155.7,378
+pct-eval/e1@1,2026-08-11T13:12:31Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,5ms,2,1,10000,6418656,6728154,7489706,6469116,154.6,597
+pct-eval/e1@1,2026-08-11T13:12:31Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,5ms,4,1,10000,6494534,6852272,7737708,6553246,152.6,1050
+pct-eval/e1@1,2026-08-11T13:12:31Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,5ms,6,1,10000,6566011,6965297,7858711,6627810,150.9,1523
+pct-eval/e1@1,2026-08-11T13:12:31Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,5ms,8,1,10000,6610971,7131114,8007714,6685692,149.6,2016
+pct-eval/e1@1,2026-08-11T13:19:10Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,20ms,10,1,10000,22193349,23763679,39474299,22825218,43.8,2529
+pct-eval/e1@1,2026-08-11T13:19:10Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,20ms,1,1,10000,21896382,22313617,23175733,21969108,45.5,378
+pct-eval/e1@1,2026-08-11T13:19:10Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,20ms,2,1,10000,21940273,22365157,23475132,22056286,45.3,597
+pct-eval/e1@1,2026-08-11T13:19:10Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,20ms,4,1,10000,22026057,23121919,32480441,22370540,44.7,1050
+pct-eval/e1@1,2026-08-11T13:19:10Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,20ms,6,1,10000,22073207,22694655,23804614,22185902,45.1,1523
+pct-eval/e1@1,2026-08-11T13:19:10Z,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),opa-1.18.2,false,opa,20ms,8,1,10000,22082294,22711820,23760553,22228709,45.0,2016

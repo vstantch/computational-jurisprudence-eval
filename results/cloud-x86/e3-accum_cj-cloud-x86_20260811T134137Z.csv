@@ -1,0 +1,12 @@
+schema,ts_unix_s,host,os,arch,cpu,runtime,sandbox,library,parallel,operation,batch_size,base_size,n_iter,p50_ns,p95_ns,p99_ns,mean_ns,proof_bytes
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,non_membership_gen,0,20000,50,803179,910362,979026,815912,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,non_membership_verify,0,20000,200,2484547,3555600,3889085,2599409,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,epoch_root_update,100,20000,300,156107,223073,261314,165870,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,omega_publish,100,20000,200,6079614,7039172,7330908,6210873,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,witness_update,100,20000,300,4430551,4867224,5556735,4421449,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,epoch_root_update,1000,20000,150,185291,268849,303720,200935,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,omega_publish,1000,20000,100,89420840,96923309,118990974,89009065,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,witness_update,1000,20000,150,26316080,30083424,32060197,26729094,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,epoch_root_update,10000,20000,60,493199,529868,544440,495258,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,omega_publish,10000,20000,30,10099494086,12310482300,27369021627,10749894301,80
+e3-accum-v1,1786455697,cj-cloud-x86,linux,x86_64,Intel Xeon @ 2.10GHz (4 vCPU),rustc-1.96.1,false,vb_accumulator-0.29.0,false,witness_update,10000,20000,60,177458560,185641710,211493813,179356996,80
