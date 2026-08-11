@@ -34,6 +34,17 @@ counts and an in-repo asyncio delay proxy (not toxiproxy). They are
 the full 10⁵-exercise counts and toxiproxy; see "Re-running" below. Do not cite
 sandbox rows in the paper.
 
+**Cross-platform rows are a third category.** `results/cloud-x86/` holds an E1 and
+E3 replication on **x86-64 Linux in a container**, added for the second *Future
+Internet* revision. It ran the full counts with real toxiproxy, so its rows are
+stamped `sandbox=false` — but they are **not** the official Mac-mini numbers
+either. Tell the two apart by `host`/`os`/`arch`/`cpu`, never by `sandbox` alone.
+Its correctness gate is **two-way** (Biscuit and OPA; `capability-grant@1` is
+imported from the non-public x402 checkout and cannot be exercised off the owner's
+machine) — see `python/verify_gate_2way.py`. What was run, what was held
+identical, the results, and the caveats are in
+[`docs/CROSS-PLATFORM.md`](docs/CROSS-PLATFORM.md).
+
 ---
 
 ## Repository layout
