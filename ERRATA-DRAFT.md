@@ -252,8 +252,6 @@ names. `claude` (the sandbox) appears in 3 files and 3 names, `cj-cloud-x86` in
 3 files and 2 names, `vm` in 1 name, and `unknown` in the 5 E3 repetition files.
 No user name or home-directory path appears under `results/`.
 
----
-
 ## 11. Provenance: "Every result row records its own platform, exercise count, and seed"
 
 **Paper (Provenance):** "Every result row records its own platform, exercise
