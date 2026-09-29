@@ -1,0 +1,13 @@
+lab-c: image cj-lab-c:ws2026, harness v2-fi-revision-2026-08-11 (06db5fc)
+lab-c: uname -m: @ARCH@
+lab-c: image arch: @ARCH@
+lab-c: subcommand: smoke
+lab-c: gate: Biscuit and OPA verdicts on all seeded fixtures
+correctness gate (2-way): checked 969 exercises across 18 configs
+GATE PASSED — biscuit == OPA == expected on every gate exercise (allow + over_budget/out_of_prefix/expired/attenuated_depth).
+lab-c: GATE PASS
+lab-c: native @ARCH@: uname -m and kernel agree with the image
+lab-c: smoke: depth 4, fanout 1, reduced counts (not comparable to a sweep)
+delay injection: toxiproxy (http://127.0.0.1:8474) — opa5=+5ms opa20=+20ms (upstream latency toxic)
+lab-c: wrote biscuit-verdicts.json e1-biscuit.csv e1-opa.csv opa-verdicts.json platform.json to /out/smoke
+lab-c: SMOKE OK

@@ -1,0 +1,358 @@
+# Lab C image: build natively per architecture, push to GHCR with SBOM and
+# provenance, sign keyless, then run smoke, all, and the container-overhead
+# comparison. Every action is pinned by commit SHA; BuildKit and cosign are
+# pinned by digest / SHA-256. Runs only on the lab-c-image branch.
+#
+# The GHCR package stays private; the merge job fails if it is anonymously
+# pullable.
+name: lab-c-image
+
+on:
+  push:
+    branches: [lab-c-image]
+
+permissions: {}
+
+concurrency:
+  group: lab-c-image
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/vstantch/cj-lab-c
+  TAG: ws2026
+  SRC_TAG: v2-fi-revision-2026-08-11
+  SRC_SHA: 06db5fc496958a03bc02f72f370f0a8f7d697bc7
+  SOURCE_DATE_EPOCH: "1786461678"
+  BUILDKIT_IMAGE: moby/buildkit:v0.33.0@sha256:6c2fa84a6b61ccd72899dde4239f8d5717f05f9a8ca6f3cad185fb1a95a94de3
+  COSIGN_VERSION: v3.1.3
+  COSIGN_SHA256_amd64: 4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71
+  COSIGN_SHA256_arm64: c5d324e091826b0d7a78eb16fef316450b4eb9aaec045611c08ba06f5e73220a
+  CERT_IDENTITY: https://github.com/vstantch/computational-jurisprudence-eval/.github/workflows/lab-c-image.yml@refs/heads/lab-c-image
+  CERT_ISSUER: https://token.actions.githubusercontent.com
+
+jobs:
+  source:
+    name: source is the tag plus lab-c only
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: tag points at the recorded commit; only lab-c/ and this workflow differ
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "refs/tags/$SRC_TAG:refs/tags/$SRC_TAG"
+          test "$(git rev-parse "$SRC_TAG^{commit}")" = "$SRC_SHA"
+          git merge-base --is-ancestor "$SRC_SHA" HEAD
+          extra="$(git diff --name-only "$SRC_SHA" HEAD | grep -vE '^(lab-c/|\.github/workflows/lab-c-image\.yml$)' || true)"
+          if [ -n "$extra" ]; then echo "files changed outside lab-c/: $extra"; exit 1; fi
+          echo "tag $SRC_TAG -> $SRC_SHA; branch adds only lab-c/ and the workflow"
+
+  build:
+    name: build ${{ matrix.arch }} (native)
+    needs: source
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { arch: amd64, uname: x86_64, runner: ubuntu-24.04 }
+          - { arch: arm64, uname: aarch64, runner: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: runner is native ${{ matrix.uname }}
+        run: test "$(uname -m)" = "${{ matrix.uname }}"
+      - name: log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: buildx builder (pinned BuildKit, no QEMU)
+        run: docker buildx create --name labc --driver docker-container --driver-opt "image=$BUILDKIT_IMAGE" --use --bootstrap
+      - name: build and push by digest, with SBOM and provenance
+        run: |
+          set -euo pipefail
+          docker buildx build \
+            -f lab-c/Dockerfile \
+            --platform "linux/${{ matrix.arch }}" \
+            --build-arg "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH" \
+            --sbom=true \
+            --provenance=mode=max \
+            --output "type=image,name=$IMAGE,push-by-digest=true,name-canonical=true,push=true,rewrite-timestamp=true" \
+            --metadata-file meta.json \
+            .
+          digest="$(jq -r '."containerimage.digest"' meta.json)"
+          echo "$digest" | grep -Eq '^sha256:[0-9a-f]{64}$'
+          mkdir -p digests && echo "$digest" > "digests/${{ matrix.arch }}"
+          echo "pushed ${{ matrix.arch }}: $digest"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: digest-${{ matrix.arch }}
+          path: digests/${{ matrix.arch }}
+          retention-days: 7
+
+  publish:
+    name: index, sign, verify, privacy check
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    outputs:
+      index: ${{ steps.index.outputs.index }}
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: digest-*
+          path: digests
+          merge-multiple: true
+      - name: log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: multi-arch index ${{ env.TAG }}
+        id: index
+        run: |
+          set -euo pipefail
+          docker buildx imagetools create -t "$IMAGE:$TAG" \
+            "$IMAGE@$(cat digests/amd64)" "$IMAGE@$(cat digests/arm64)"
+          index="$(docker buildx imagetools inspect "$IMAGE:$TAG" --format '{{json .Manifest}}' | jq -r .digest)"
+          echo "index=$index" >> "$GITHUB_OUTPUT"
+          docker buildx imagetools inspect --raw "$IMAGE@$index" > index.json
+          {
+            echo "multi-arch index: $IMAGE@$index"
+            jq -r '.manifests[] | select(.platform.os=="linux") | "linux/\(.platform.architecture) image manifest: \(.digest)"' index.json
+            jq -r '.manifests[] | select(.annotations["vnd.docker.reference.type"]=="attestation-manifest") | "attestation manifest for \(.annotations["vnd.docker.reference.digest"]): \(.digest)"' index.json
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          test "$(jq '[.manifests[] | select(.platform.os=="linux")] | length' index.json)" = 2
+          test "$(jq '[.manifests[] | select(.annotations["vnd.docker.reference.type"]=="attestation-manifest")] | length' index.json)" = 2
+      - name: SBOM and provenance are present per platform
+        run: |
+          set -euo pipefail
+          ref="$IMAGE@${{ steps.index.outputs.index }}"
+          for p in linux/amd64 linux/arm64; do
+            docker buildx imagetools inspect "$ref" --format "{{ json (index .SBOM \"$p\") }}" | jq -e '.SPDX.packages | length > 0' >/dev/null
+            docker buildx imagetools inspect "$ref" --format "{{ json (index .Provenance \"$p\") }}" | jq -e '.SLSA.buildDefinition // .SLSA.invocation' >/dev/null
+            echo "$p: SBOM and provenance present"
+          done
+      - name: install cosign ${{ env.COSIGN_VERSION }} (SHA-256 pinned)
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/cosign" "https://github.com/sigstore/cosign/releases/download/$COSIGN_VERSION/cosign-linux-amd64"
+          echo "$COSIGN_SHA256_amd64  $RUNNER_TEMP/cosign" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/cosign"
+      - name: sign keyless (index and every manifest) and verify
+        run: |
+          set -euo pipefail
+          ref="$IMAGE@${{ steps.index.outputs.index }}"
+          "$RUNNER_TEMP/cosign" sign --yes --recursive "$ref"
+          "$RUNNER_TEMP/cosign" verify "$ref" \
+            --certificate-identity "$CERT_IDENTITY" --certificate-oidc-issuer "$CERT_ISSUER" > /dev/null
+          echo "cosign verify: OK for $ref" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: package is private (anonymous pull must fail)
+        run: |
+          set -euo pipefail
+          token="$(curl -s "https://ghcr.io/token?scope=repository:vstantch/cj-lab-c:pull" | jq -r '.token // empty')"
+          code="$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer ${token:-none}" \
+            -H 'Accept: application/vnd.oci.image.index.v1+json' \
+            "https://ghcr.io/v2/vstantch/cj-lab-c/manifests/$TAG")"
+          echo "anonymous manifest fetch: HTTP $code"
+          if [ "$code" = 200 ]; then echo "::error::GHCR package is PUBLIC"; exit 1; fi
+
+  smoke:
+    name: smoke ${{ matrix.arch }} (native)
+    needs: publish
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, uname: x86_64, runner: ubuntu-24.04 }
+          - { arch: arm64, uname: aarch64, runner: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: read
+    env:
+      REF: ghcr.io/vstantch/cj-lab-c:ws2026@${{ needs.publish.outputs.index }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: runner is native ${{ matrix.uname }}
+        run: test "$(uname -m)" = "${{ matrix.uname }}"
+      - name: log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: pull
+        run: |
+          set -euo pipefail
+          start=$SECONDS; docker pull -q "$REF"; echo "pull: $((SECONDS - start)) s"
+          echo "image size (unpacked, docker image inspect): $(docker image inspect -f '{{.Size}}' "$REF") bytes"
+          docker buildx imagetools inspect --raw "$REF" \
+            | jq -r '.manifests[] | select(.platform.architecture=="${{ matrix.arch }}") | .digest' > pdigest
+          docker buildx imagetools inspect --raw "ghcr.io/vstantch/cj-lab-c@$(cat pdigest)" \
+            | jq '[.layers[].size] | add' | xargs -I{} echo "image size (compressed layers, ${{ matrix.arch }}): {} bytes"
+          echo "platform manifest ${{ matrix.arch }}: $(cat pdigest)"
+      - name: smoke (student command)
+        run: |
+          set -euo pipefail
+          mkdir -p lab-c-out
+          start=$(date +%s%N)
+          docker run --rm --init --network none --read-only \
+            --tmpfs /tmp:rw,nosuid,nodev,size=1g \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --user "$(id -u):$(id -g)" -v "$PWD/lab-c-out:/out" \
+            "$REF" smoke | tee smoke.log
+          echo "smoke wall time (${{ matrix.arch }}): $(( ($(date +%s%N) - start) / 1000000 )) ms" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "/out after smoke: $(du -sb lab-c-out | cut -f1) bytes"
+      - name: canary lines and /out whitelist
+        run: |
+          python3 lab-c/ci/report.py smoke smoke.log "${{ matrix.uname }}"
+          python3 lab-c/ci/report.py out lab-c-out
+          cat lab-c-out/smoke/platform.json
+      - name: privacy probe (OPA makes no outbound call)
+        run: |
+          set -euo pipefail
+          cat > probe.sh <<'EOF'
+          cd /tmp
+          python3 -c '
+          import socket
+          s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+          s.bind(("127.0.0.1", 9999)); s.listen(5); s.settimeout(6)
+          try:
+              while True:
+                  c, _ = s.accept(); print("OUTBOUND:", c.recv(200).split(b"\r\n")[0].decode()); c.close()
+          except OSError:
+              pass
+          ' &
+          sleep 0.5
+          HTTPS_PROXY=http://127.0.0.1:9999 HTTP_PROXY=http://127.0.0.1:9999 \
+            /opt/harness/bin/opa run --server --addr 127.0.0.1:8181 /opt/harness/policies/capability.rego >/dev/null 2>&1 &
+          sleep 4; kill $!; wait
+          EOF
+          docker run --rm --network none --read-only --tmpfs /tmp --user "$(id -u):$(id -g)" \
+            -v "$PWD/probe.sh:/probe.sh:ro" --entrypoint /bin/bash "$REF" /probe.sh | tee probe.log
+          if grep -q OUTBOUND probe.log; then echo "::error::OPA attempted an outbound connection"; exit 1; fi
+          echo "privacy probe: no outbound connection attempt from OPA (as started by the harness)"
+
+  all:
+    name: all ${{ matrix.arch }} (native)
+    needs: [publish, smoke]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, uname: x86_64, runner: ubuntu-24.04 }
+          - { arch: arm64, uname: aarch64, runner: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 240
+    permissions:
+      contents: read
+      packages: read
+    env:
+      REF: ghcr.io/vstantch/cj-lab-c:ws2026@${{ needs.publish.outputs.index }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: runner is native ${{ matrix.uname }}
+        run: test "$(uname -m)" = "${{ matrix.uname }}"
+      - name: log in to GHCR and pull
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker pull -q "$REF"
+      - name: all (student command)
+        run: |
+          set -euo pipefail
+          mkdir -p lab-c-out
+          start=$(date +%s)
+          docker run --rm --init --network none --read-only \
+            --tmpfs /tmp:rw,nosuid,nodev,size=1g \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --user "$(id -u):$(id -g)" -v "$PWD/lab-c-out:/out" \
+            "$REF" all | tee all.log
+          echo "all wall time (${{ matrix.arch }}): $(( $(date +%s) - start )) s" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "/out after all: $(du -sb lab-c-out | cut -f1) bytes" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: whitelist, p50 table, crossover
+        run: |
+          set -euo pipefail
+          python3 lab-c/ci/report.py out lab-c-out
+          cat lab-c-out/all/platform.json
+          python3 lab-c/ci/report.py sweep lab-c-out/all | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lab-c-all-${{ matrix.arch }}
+          path: |
+            lab-c-out/all
+            all.log
+          retention-days: 30
+
+  overhead:
+    name: container overhead (amd64, native vs container)
+    needs: publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    permissions:
+      contents: read
+      packages: read
+    env:
+      REF: ghcr.io/vstantch/cj-lab-c:ws2026@${{ needs.publish.outputs.index }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11.15"
+      - name: native harness prerequisites (same pins as the image)
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.96.1 --profile minimal
+          test "$(rustc --version | cut -d' ' -f2)" = "1.96.1"
+          cargo build --release --locked -p e1-biscuit
+          mkdir -p bin "$RUNNER_TEMP/tools"
+          curl -fsSL -o bin/opa https://github.com/open-policy-agent/opa/releases/download/v1.18.2/opa_linux_amd64_static
+          echo "9903e5125ac281104f2c4b7371d10cc3b74a98933743fcbfc174f9bf0ab20de8  bin/opa" | sha256sum -c -
+          curl -fsSL -o "$RUNNER_TEMP/tools/toxiproxy-server" https://github.com/Shopify/toxiproxy/releases/download/v2.12.0/toxiproxy-server-linux-amd64
+          echo "556d891134a3c582dc1e1a3f7335fd55142e5965769855a00b944e13e48302fc  $RUNNER_TEMP/tools/toxiproxy-server" | sha256sum -c -
+          chmod +x bin/opa "$RUNNER_TEMP/tools/toxiproxy-server"
+          echo "$RUNNER_TEMP/tools" >> "$GITHUB_PATH"
+          mkdir -p "$RUNNER_TEMP/workloads-f1"
+          for f in "$PWD"/workloads/graph_d*_f1.json; do ln -s "$f" "$RUNNER_TEMP/workloads-f1/"; done
+          echo "native python: $(python3 --version)"
+      - name: native sweep (the harness's own runner)
+        env:
+          PCT_HOST: native
+          PCT_SANDBOX: "true"
+          PCT_CPU: native-runner
+          PCT_DELAY_METHOD: toxiproxy
+        run: |
+          set -euo pipefail
+          export PCT_WORKLOADS="$RUNNER_TEMP/workloads-f1" PCT_RESULTS="$RUNNER_TEMP/native"
+          mkdir -p "$PCT_RESULTS"
+          ./target/release/e1-biscuit bench "$PCT_WORKLOADS" "$PCT_RESULTS/e1-biscuit.csv"
+          ./scripts/opa_e1.sh bench
+      - name: container sweep (same runner)
+        run: |
+          set -euo pipefail
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker pull -q "$REF"
+          mkdir -p lab-c-out
+          docker run --rm --init --network none --read-only \
+            --tmpfs /tmp:rw,nosuid,nodev,size=1g \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --user "$(id -u):$(id -g)" -v "$PWD/lab-c-out:/out" \
+            "$REF" sweep
+      - name: ratio of medians
+        run: python3 lab-c/ci/report.py overhead "$RUNNER_TEMP/native" lab-c-out/sweep | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lab-c-overhead-amd64
+          path: |
+            ${{ runner.temp }}/native
+            lab-c-out/sweep
+          retention-days: 30

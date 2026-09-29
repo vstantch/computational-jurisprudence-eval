@@ -1,0 +1,20 @@
+# Build context whitelist for lab-c/Dockerfile (context = repository root).
+*
+!rust-toolchain.toml
+!Cargo.toml
+!Cargo.lock
+!crates/
+!scripts/opa_e1.sh
+!python/common.py
+!python/opa_bench.py
+!python/verify_gate_2way.py
+!python/mkcrossplatform.py
+!policies/capability.rego
+!workloads/
+!results/*.csv
+!lab-c/opa-wrapper.sh
+!lab-c/entrypoint.sh
+!lab-c/platform_info.py
+!lab-c/sanitize.py
+!lab-c/audit_imports.py
+!lab-c/curl-loopback.py
