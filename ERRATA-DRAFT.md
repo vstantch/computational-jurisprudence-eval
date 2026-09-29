@@ -51,8 +51,8 @@ OPA file under `_superseded/`.
 
 **Paper:** toxiproxy (Measurement conditions, Disclosed biases, Provenance).
 **README at the tag:** "For the delay configs it uses the in-repo
-`python/delay_proxy.py`; substitute toxiproxy … by pointing `OPA_PORT` at the
-toxiproxy listener." **OFFICIAL-RUNS.md at the tag:** `./scripts/opa_e1.sh
+`python/delay_proxy.py`; substitute **toxiproxy** on the Mac by pointing
+`opa_bench.py`'s `OPA_PORT` at the toxiproxy listener." **OFFICIAL-RUNS.md at the tag:** `./scripts/opa_e1.sh
 bench-delayed toxiproxy`, a mode that has never existed.
 
 **Evidence.**
@@ -65,7 +65,7 @@ bench-delayed toxiproxy`, a mode that has never existed.
   that arrives in two chunks pays the delay twice. The 2026-07-10 file shows that
   signature (fanout 1, depths 1–10): at +20 ms, p50 23.0–23.8 ms but p95
   44.2–45.9 ms and p99 44.9–46.6 ms (p95/p50 1.89–1.94); at +5 ms, p95/p50
-  1.15–1.84. The 2026-07-11 file has p95/p50 1.03–1.05 at +20 ms and 1.09–1.13
+  1.15–1.84. The 2026-07-11 file has p95/p50 1.033–1.045 at +20 ms and 1.09–1.13
   at +5 ms, the same tight shape as the five 2026-08-03 repetitions
   (`repeat_e1.sh` defaults to toxiproxy) and the 2026-08-11 x86 run
   (`run-cloud-x86.sh` sets toxiproxy).
@@ -118,12 +118,12 @@ run-to-run spread within each level (max/min − 1 of the three runs):
 | 8  | 0.874 0.823 0.904 | 0.867 | 0.823–0.904 | 4.9 % | 4.7 % |
 | 10 | 0.928 0.917 0.984 | 0.943 | 0.917–0.984 | 1.3 % | 8.6 % |
 
-All 18 paired ratios are below 1. The effect (5.7–13.3 % of the info-level p50,
-about 37–86 µs) exceeds the run-to-run spread at depths 1–8; at depth 10 it does
+All 18 paired ratios are below 1 (ratios computed from unrounded p50s). The
+effect (5.7–13.3 % of the info-level p50, about 37–103 µs) exceeds the run-to-run spread at depths 1–8; at depth 10 it does
 not (5.7 % against an 8.6 % spread among the error-level runs). On this machine,
 the default log level therefore made local OPA slower: a bias **against** OPA,
 opposite in direction to the disclosed Rego bias. The +5/+20 ms rows carry the
-same absolute cost, which is under 1.5 % of their p50. The size on the Mac mini
+same absolute cost, which is under 1.6 % of their p50. The size on the Mac mini
 (APFS, a different CPU) was not measured and may differ; n = 3 per level.
 
 **Consequence for a stated result.** The paper reports that co-located OPA is the
@@ -140,7 +140,12 @@ log level, which writes a log record per decision. On a separate x86-64 machine,
 running OPA with `--log-level error` lowered its local p50 by 6–13 % (depths 1–8;
 three runs per level). This cost is included in the OPA rows and biases the
 comparison against OPA; with it removed, the crossover reported above could
-occur at a shallower depth." Before choosing, the cheapest check is to rerun the
+occur at a shallower depth." The same qualification would apply where the paper
+restates the crossover (the cross-platform paragraph "The crossover does not
+replicate", the scope paragraph "…from depth 6 onward faster than the Rust
+implementation", and the conclusion) and to the provenance sentence "the E1
+comparison is deliberately biased in OPA's favor", which would then be true of
+the Rego bias but not of the comparison as a whole. Before choosing, the cheapest check is to rerun the
 localhost sweep on the Mac mini with `PCT_OPA_LOG_LEVEL=error` (about 10 min).
 The harness default is unchanged.
 
@@ -154,16 +159,18 @@ decision path, but `opa_e1.sh` at the tag started OPA without
 **Capture.** OPA 1.18.2 (linux-amd64 static, SHA-256 9903e512…), started exactly
 as `opa_e1.sh` did at the tag, under `strace -f -e trace=connect,sendto`, proxy
 variables removed. Over 30 min: startup, 2,000 decisions in 68 s, then 29 min
-idle. The only non-loopback system calls were, within 30 ms of startup: two DNS
-queries (UDP 53 to the configured resolver) and one TCP connect to port 443 of
-140.82.112.5, a GitHub address (api.github.com, OPA's version check). There
-was no outbound call during or after the 2,000 decisions, and none periodically.
+idle. The only non-loopback system calls were, within 30 ms of startup: two
+`connect`s to the configured DNS resolver (UDP 53) and one TCP `connect` to port
+443 of 140.82.112.5, a GitHub address. The host name comes from a separate
+probe of the same binary with an HTTP proxy variable pointing at a local
+listener, which received `CONNECT api.github.com:443` at startup. There was no
+outbound call during or after the 2,000 decisions, and none periodically.
 With `--skip-version-check`, and separately with `--disable-telemetry`, the same
 capture (200 decisions, 20 s idle) recorded no `connect` or `sendto` at all.
 
 **Proposed sentence:** "OPA was started without `--skip-version-check`, so at
-startup it made one outbound HTTPS request to check for a newer version; it made
-no network call per decision, and the timings are unaffected." The harness now
+startup it attempted one outbound TLS connection (to api.github.com, its version
+check); it made no network call per decision, so the timings do not include one." The harness now
 passes `--skip-version-check`.
 
 ## 6. Cross-platform: "the same harness at the same commit"
@@ -173,14 +180,19 @@ uses the same harness at the same commit …"; "Both rows of each pair come from
 the same harness at the same commit …".
 
 **Evidence.** The reference E1 files were produced on 2026-07-10/11 (committed in
-16bc75d and 2b424a2); the x86 run used b42ae1b (tag `v1-fi-revision-2026-08-03`).
-Between 2b424a2 and b42ae1b the E1 code path differs only by `PCT_MAX_PER_CONFIG`,
+16bc75d and 2b424a2; the OPA run's own code was uncommitted at run time, item 3).
+The x86 run's E1 code is b42ae1b (tag `v1-fi-revision-2026-08-03`), per
+`scripts/run-cloud-x86.sh`; that script and `python/verify_gate_2way.py` were
+committed with the x86 results in 8631061, and `git diff b42ae1b 8631061` leaves
+the E1 code path untouched. Between 2b424a2 and b42ae1b the E1 code path differs
+only by `PCT_MAX_PER_CONFIG`,
 an exercise cap added to the Biscuit and grant@1 benches that is unset (no cap)
 in both runs; `scripts/opa_e1.sh`, `python/opa_bench.py`, `python/common.py` and
 the policy are identical. So the runs used the same code path, not the same commit.
 
-**Proposed wording:** "the same harness code path (commits 2b424a2 and b42ae1b,
-which differ in E1 only by an exercise cap that neither run used)". The caption
+**Proposed wording:** "the same harness code path (the reference run's code, first
+committed in 2b424a2, and b42ae1b plus the runner script of 8631061, which differ
+in E1 only by an exercise cap that neither run used)". The caption
 of the generated table keeps its current text until you decide; the generator
 reproduces it byte-for-byte.
 
@@ -211,7 +223,8 @@ same committed CSVs by the article's build (paper repository)." Or move
 `sandbox=true`."
 
 **Evidence.** Since 16bc75d, `results/` also holds the official Apple M4 files
-(`sandbox=false`) and, since 8631061, the x86 files. The committed `plots/*.png`
+(`sandbox=false`); the README's next paragraph covers the x86 files, but nothing
+covers the Mac files. The committed `plots/*.png`
 were generated from all of `results/` at 16bc75d, so each series mixes sandbox and
 official points (e.g. grant1 at depth 1 is plotted at both 65 µs and 167 µs),
 under a caption that reads "SANDBOX (indicative)". The paper includes none of
@@ -224,8 +237,8 @@ regenerated.
 
 ## 9. `runtime` column of Rust rows
 
-The Biscuit and E3 benches wrote the literal string `rustc-1.96.1` into `runtime`
-rather than the compiler's version. The toolchain was pinned to 1.96.1
+Unless `PCT_RUNTIME` was set, the Biscuit and E3 benches wrote the literal string
+`rustc-1.96.1` into `runtime` rather than the compiler's version. The toolchain was pinned to 1.96.1
 (`rust-toolchain.toml`), so the value is plausible, but it is a label, not a
 measurement. The paper's "Biscuit under rustc 1.96.1" rests on the toolchain pin.
 On this branch `build.rs` records the compiler actually used; committed CSVs are
@@ -240,3 +253,18 @@ names. `claude` (the sandbox) appears in 3 files and 3 names, `cj-cloud-x86` in
 No user name or home-directory path appears under `results/`.
 
 ---
+
+## 11. Provenance: "Every result row records its own platform, exercise count, and seed"
+
+**Paper (Provenance):** "Every result row records its own platform, exercise
+count, and seed, so the two runs are distinguishable in the data rather than
+only in the prose."
+
+**Evidence.** E1 and E3 result rows record platform (`host`, `os`, `arch`, `cpu`)
+and `n_exercises`, but no seed. The seed (12648430 = 0xC0FFEE) is recorded in
+every fixture (`workloads/graph_*.json`), and the rows identify their fixture by
+depth and fanout. Only the E2 repetition files carry a seed (`# seed,42`).
+
+**Proposed wording:** "Every result row records its own platform and exercise
+count, and identifies the seeded fixture it ran on, so …"
+
