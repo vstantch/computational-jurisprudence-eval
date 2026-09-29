@@ -146,7 +146,25 @@ The harness default is unchanged.
 
 ## 5. OPA makes one outbound call at startup ("over localhost")
 
-_Pending: filled in from the traffic capture below._
+**Paper (E1):** OPA as "a centralized PDP evaluating an equivalent Rego policy over
+localhost". **README:** OPA "over localhost HTTP". Neither is wrong about the
+decision path, but `opa_e1.sh` at the tag started OPA without
+`--skip-version-check`/`--disable-telemetry`.
+
+**Capture.** OPA 1.18.2 (linux-amd64 static, SHA-256 9903e512…), started exactly
+as `opa_e1.sh` did at the tag, under `strace -f -e trace=connect,sendto`, proxy
+variables removed. Over 30 min: startup, 2,000 decisions in 68 s, then 29 min
+idle. The only non-loopback system calls were, within 30 ms of startup: two DNS
+queries (UDP 53 to the configured resolver) and one TCP connect to port 443 of
+140.82.112.5, a GitHub address (api.github.com, OPA's version check). There
+was no outbound call during or after the 2,000 decisions, and none periodically.
+With `--skip-version-check`, and separately with `--disable-telemetry`, the same
+capture (200 decisions, 20 s idle) recorded no `connect` or `sendto` at all.
+
+**Proposed sentence:** "OPA was started without `--skip-version-check`, so at
+startup it made one outbound HTTPS request to check for a newer version; it made
+no network call per decision, and the timings are unaffected." The harness now
+passes `--skip-version-check`.
 
 ## 6. Cross-platform: "the same harness at the same commit"
 
@@ -222,7 +240,3 @@ names. `claude` (the sandbox) appears in 3 files and 3 names, `cj-cloud-x86` in
 No user name or home-directory path appears under `results/`.
 
 ---
-
-## Traffic capture (item 5) — method
-
-_Filled in below._
