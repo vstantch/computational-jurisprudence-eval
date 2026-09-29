@@ -3,8 +3,8 @@
 # harness's table generator. Harness scratch output stays on the /tmp tmpfs;
 # only lab-c/sanitize.py writes to /out, by whitelist.
 #
-# Exit codes: 0 ok, 2 usage or /out not mounted, 3 GATE FAIL,
-#             4 not native (no timings), anything else: harness error.
+# Exit codes: 0 ok, 2 usage or /out or /tmp not mounted, 3 GATE FAIL,
+#             4 not native (no timings), 5 OPA port busy, else harness error.
 set -euo pipefail
 
 H=/opt/harness
@@ -22,7 +22,8 @@ Subcommands (each writes to /out/<subcommand>/):
           on every seeded fixture
   smoke   gate, then one depth (d4, fanout 1) with reduced counts; < 2 min
   sweep   gate, then the E1 depth sweep: Biscuit, OPA local, OPA +5 ms and
-          +20 ms through toxiproxy (harness defaults: depths 1-10, fanout 1)
+          +20 ms through toxiproxy (harness defaults; depths 1 2 4 6 8 10,
+          fanout 1)
   all     sweep, then the harness's table generator (crossplatform.tex)
 
 Mount a writable directory at /out; see the handout for the full command.
@@ -94,24 +95,43 @@ run_sweep() { # workloads_dir
 finish() {
   local dest="/out/$CMD"
   mkdir -p "$dest"
-  rm -f "$dest"/{platform.json,biscuit-verdicts.json,opa-verdicts.json,e1-biscuit.csv,e1-opa.csv,crossplatform.tex}
   python3 "$L/platform_info.py" json "$RAW/platform.json"
   python3 "$L/sanitize.py" "$RAW" "$dest" "$RAW/platform.json"
   say "wrote $(cd "$dest" && ls | sort | tr '\n' ' ')to $dest"
 }
 
+# A new run replaces this subcommand's previous output before anything else,
+# so a GATE FAIL or a refusal never leaves older timings in place.
+rm -rf "/out/$CMD"
+
 run_gate
+
+# opa_e1.sh stops the gate's OPA asynchronously; the bench needs port 8181.
+wait_port_free() {
+  python3 - <<'PY' || { say "port 8181 still in use after the gate" >&2; exit 5; }
+import socket, sys, time
+for _ in range(100):
+    try:
+        socket.create_connection(("127.0.0.1", 8181), timeout=0.2).close()
+    except OSError:
+        sys.exit(0)
+    time.sleep(0.1)
+sys.exit(1)
+PY
+}
 
 case "$CMD" in
   gate)
     ;;
   smoke)
     require_native
+    wait_port_free
     say "smoke: depth 4, fanout 1, reduced counts (not comparable to a sweep)"
     PCT_MAX_PER_CONFIG=10000 PCT_OPA_LOCAL=2000 PCT_OPA_DELAY=100 run_sweep "$H/workloads-smoke"
     ;;
   sweep|all)
     require_native
+    wait_port_free
     say "sweep: depths 1 2 4 6 8 10, fanout 1, harness default counts"
     run_sweep "$H/workloads-f1"
     if [[ "$CMD" == all ]]; then

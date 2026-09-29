@@ -11,7 +11,8 @@
 !python/mkcrossplatform.py
 !policies/capability.rego
 !workloads/
-!results/*.csv
+!results/e1-biscuit_pier39.local_20260710T230124Z.csv
+!results/e1-opa_pier39.local_20260711T135215Z.csv
 !lab-c/opa-wrapper.sh
 !lab-c/entrypoint.sh
 !lab-c/platform_info.py

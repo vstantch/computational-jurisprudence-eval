@@ -56,12 +56,16 @@ ARG TARGETARCH
 # tool, curl, is replaced by lab-c/curl-loopback.py (stdlib, loopback only).
 
 # Harness at the tag: only what the E1 gate, sweep and table generator read.
-# results/*.csv is the table generator's reference directory, copied read-only.
+# The table generator's reference directory: the Mac-mini rows that
+# `mkcrossplatform.py results ...` resolves to at the tag (its loader keeps the
+# last file per key in name order), named explicitly so nothing else can win.
 COPY --chmod=0755 scripts/opa_e1.sh /opt/harness/scripts/opa_e1.sh
 COPY python/common.py python/opa_bench.py python/verify_gate_2way.py python/mkcrossplatform.py /opt/harness/python/
 COPY policies/capability.rego /opt/harness/policies/
 COPY workloads/ /opt/harness/workloads/
-COPY results/*.csv /opt/harness/reference/
+COPY results/e1-biscuit_pier39.local_20260710T230124Z.csv \
+     results/e1-opa_pier39.local_20260711T135215Z.csv \
+     /opt/harness/reference/
 
 COPY --from=build /stage/e1-biscuit /usr/local/bin/e1-biscuit
 COPY --from=bin --chmod=0755 /opa /usr/local/libexec/lab-c/opa
