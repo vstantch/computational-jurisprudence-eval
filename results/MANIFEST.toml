@@ -1,0 +1,381 @@
+# Provenance manifest for results/: every committed result file, its SHA-256,
+# the platform and system it measures, and its role. Loaders read this instead
+# of globbing results/, and fail when a (platform, system) has more or fewer
+# than one "official" file, when a file's SHA-256 differs, or when a file under
+# results/ is not listed. Adding this file changes no result file.
+#
+# role: official      the run a published table uses
+#       superseded    an earlier official-platform run no table uses
+#       sandbox       reduced-count indicative run (sandbox=true), never cited
+#       repetition    one of the five variability repetitions (rep = 1..5)
+#       gate-evidence ALLOW/DENY verdicts written by the correctness gate
+#
+# Check: python3 python/results_manifest.py check
+
+schema = "pct-eval/results-manifest@1"
+
+[platforms.apple-m4]
+cpu = "Apple M4 (4P+6E)"
+row_label = "Apple M4 (reference)"
+caption = "Apple M4 Mac mini, macOS/aarch64"
+delay_method = "toxiproxy"
+delay_method_evidence = "commit 2b424a2 message; tight p95/p50 tail at +5/+20 ms (ERRATA-DRAFT.md, B)"
+
+[platforms.x86-cloud]
+cpu = "Intel Xeon @ 2.10GHz (4 vCPU)"
+row_label = "x86-64 container"
+caption = "Intel Xeon at 2.10\\,GHz, four vCPUs, Linux/x86-64, inside a container under a hypervisor"
+delay_method = "toxiproxy"
+delay_method_evidence = "scripts/run-cloud-x86.sh sets PCT_DELAY_METHOD=toxiproxy"
+
+[platforms.sandbox-aarch64]
+cpu = "aarch64-sandbox(4vcpu)"
+row_label = "aarch64 sandbox (indicative)"
+caption = "Linux/aarch64 sandbox, reduced counts (indicative only)"
+delay_method = "asyncio"
+delay_method_evidence = "README: sandbox rows used the in-repo asyncio delay proxy"
+
+[[file]]
+path = "e1-biscuit_pier39.local_20260710T230124Z.csv"
+sha256 = "83221ba61e8aedd5d603c73a542612219db11d64e36c83868313835f08a84f8e"
+platform = "apple-m4"
+system = "biscuit"
+role = "official"
+used_by = ["paper:E1", "crossplatform"]
+
+[[file]]
+path = "e1-grant_pier39.local_20260710T230124Z.csv"
+sha256 = "7539a772491c8e19b514a742b0849e2bca6c7530682ebd49e3020e73bd0592b0"
+platform = "apple-m4"
+system = "grant1"
+role = "official"
+used_by = ["paper:E1"]
+
+[[file]]
+path = "e1-opa_pier39.local_20260711T135215Z.csv"
+sha256 = "450dee2962e1a21c1f3d6d84efb85d0d8319f5125694b5e42a2b9d38d819907d"
+platform = "apple-m4"
+system = "opa"
+role = "official"
+used_by = ["paper:E1", "crossplatform"]
+
+[[file]]
+path = "e1-opa_pier39.local_20260710T233343Z.csv"
+sha256 = "277aa833c3de47c2b65a95576a2e84c33e8d625ade7f0b492285ec60d4f7c073"
+platform = "apple-m4"
+system = "opa"
+role = "superseded"
+note = "asyncio delay_proxy run; replaced by the 2026-07-11 toxiproxy run (commit 2b424a2); reproduces no published row"
+
+[[file]]
+path = "e3-accum_pier39.local_20260711T124502Z.csv"
+sha256 = "d78afc54380b7c1893c0d067a2d2ec8da8a0e6f415bcd2a170190b3d484da012"
+platform = "apple-m4"
+system = "e3"
+role = "official"
+used_by = ["paper:E3"]
+
+[[file]]
+path = "biscuit-verdicts.json"
+sha256 = "2d61a52ef9731e26af9a6f8fa6ca0b9c287adde0fc66c12a9781bb01afc32b94"
+platform = "apple-m4"
+system = "biscuit"
+role = "gate-evidence"
+
+[[file]]
+path = "grant-verdicts.json"
+sha256 = "866158bf3c93539d8edc1496e4c6717f70b2d5e12e257f242fa00edae22ab265"
+platform = "apple-m4"
+system = "grant1"
+role = "gate-evidence"
+
+[[file]]
+path = "opa-verdicts.json"
+sha256 = "866158bf3c93539d8edc1496e4c6717f70b2d5e12e257f242fa00edae22ab265"
+platform = "apple-m4"
+system = "opa"
+role = "gate-evidence"
+
+[[file]]
+path = "e1-biscuit_claude_20260710T202522Z.csv"
+sha256 = "36e843d00b2b085fc4694a1e0d6a5c0381ffb49036d3a8e3712d3ed0e7589db9"
+platform = "sandbox-aarch64"
+system = "biscuit"
+role = "sandbox"
+
+[[file]]
+path = "e1-grant_claude_20260710T202522Z.csv"
+sha256 = "b7d22494a1cbccd2d845a8f38b01714c387b4facf50f614c94d0a0e6ecedea9a"
+platform = "sandbox-aarch64"
+system = "grant1"
+role = "sandbox"
+
+[[file]]
+path = "e1-opa_claude_20260710T202618Z.csv"
+sha256 = "f1c4dc07b860b6c7627ad9f76c5b7db52fccc62e689c0e2e40bf25bfd760480b"
+platform = "sandbox-aarch64"
+system = "opa"
+role = "sandbox"
+
+[[file]]
+path = "cloud-x86/e1-biscuit_cj-cloud-x86_20260811T130047Z.csv"
+sha256 = "5b9e78d0c8d2ea01123d24a6410de9d405076c56fb728aca99aeefa284ff2f8d"
+platform = "x86-cloud"
+system = "biscuit"
+role = "official"
+used_by = ["crossplatform"]
+
+[[file]]
+path = "cloud-x86/e1-opa_vm_20260811T130414Z.csv"
+sha256 = "08fbc4987afe74e72eb75214d7f19af34c66853e7be97d498705e7472feec3c0"
+platform = "x86-cloud"
+system = "opa"
+role = "official"
+used_by = ["crossplatform"]
+
+[[file]]
+path = "cloud-x86/e3-accum_cj-cloud-x86_20260811T134137Z.csv"
+sha256 = "a0d745ca8f5c007a8d04873b6fe79dc9ab78a612f7792030d0d4403ba7949a2b"
+platform = "x86-cloud"
+system = "e3"
+role = "official"
+used_by = ["paper:E3-crossplatform"]
+
+[[file]]
+path = "cloud-x86/biscuit-verdicts.json"
+sha256 = "05a0db8ee5f0eaa64e6e32ef9f386812da3887600d711c19fea2d7a8e50dcbbd"
+platform = "x86-cloud"
+system = "biscuit"
+role = "gate-evidence"
+
+[[file]]
+path = "cloud-x86/opa-verdicts.json"
+sha256 = "926579acd667b000777db0e72cf68015afd67655b76c0875373bf20cf3fe6a60"
+platform = "x86-cloud"
+system = "opa"
+role = "gate-evidence"
+
+[[file]]
+path = "variability/rep1-biscuit.csv"
+sha256 = "cb8e11d868ca7a10a2c157e3e67d8eb914270d487760805ae0b600a34cea450b"
+platform = "apple-m4"
+system = "biscuit"
+role = "repetition"
+rep = 1
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep1-grant.csv"
+sha256 = "09bd0e839aca718c88facdd8eadd51800e333728bfad0bb129f884775a904f95"
+platform = "apple-m4"
+system = "grant1"
+role = "repetition"
+rep = 1
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep1-opa.csv"
+sha256 = "4d8d9611d645106597e9bed831e553102f1cc03a102dcc2e04582fb7af3e0887"
+platform = "apple-m4"
+system = "opa"
+role = "repetition"
+rep = 1
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e2/rep1-e2-replay.csv"
+sha256 = "21d1342b5bc50b01ada6db84815d1799cd2fd3ac588dcf2d9cae16874964da81"
+platform = "apple-m4"
+system = "e2"
+role = "repetition"
+rep = 1
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e3/rep1-e3.csv"
+sha256 = "84e87a157945b47fd9ff1a02ea25fe212b3fbaa45710b7150ca467feac6ccced"
+platform = "apple-m4"
+system = "e3"
+role = "repetition"
+rep = 1
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep2-biscuit.csv"
+sha256 = "e1101445397993882634edda54caf8d41d6afaf8f0f339ab9087b54166749ca7"
+platform = "apple-m4"
+system = "biscuit"
+role = "repetition"
+rep = 2
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep2-grant.csv"
+sha256 = "ee3907c36406e6871725ec7c1ef56e3489c0c1ad809a98c46138ac78cd4d69db"
+platform = "apple-m4"
+system = "grant1"
+role = "repetition"
+rep = 2
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep2-opa.csv"
+sha256 = "24fcb439457c1bd99f8a32b52e704cea60b4fb92a90f82604f836b52174e818f"
+platform = "apple-m4"
+system = "opa"
+role = "repetition"
+rep = 2
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e2/rep2-e2-replay.csv"
+sha256 = "2ff5a6da8f41076844c0fc4b63fe0b3f6ffc3d250d905b50b36057b92721878a"
+platform = "apple-m4"
+system = "e2"
+role = "repetition"
+rep = 2
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e3/rep2-e3.csv"
+sha256 = "01136f362fcbde9514b764a98ed3c020fbb391d01146d2cc6eefc4dcd215c100"
+platform = "apple-m4"
+system = "e3"
+role = "repetition"
+rep = 2
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep3-biscuit.csv"
+sha256 = "c9e5c27d3a15c5be2b474a60c09c5ddf68446c0eacebf5b2aa4ea1805e3dbc0a"
+platform = "apple-m4"
+system = "biscuit"
+role = "repetition"
+rep = 3
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep3-grant.csv"
+sha256 = "126b57e00b33c675e5312d52796d302501753f5be21c39cbab54fe261ce9c54e"
+platform = "apple-m4"
+system = "grant1"
+role = "repetition"
+rep = 3
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep3-opa.csv"
+sha256 = "6160741257e4036035c8ce92081eddefe7b3b9944a1200c848a3e38e900d6cae"
+platform = "apple-m4"
+system = "opa"
+role = "repetition"
+rep = 3
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e2/rep3-e2-replay.csv"
+sha256 = "e4099726c28bad71a3c5ccc1c6b7c2face3aa279a8c7d14084ce311105d96980"
+platform = "apple-m4"
+system = "e2"
+role = "repetition"
+rep = 3
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e3/rep3-e3.csv"
+sha256 = "6e1427031dc8a550ee4503f2cb36e6d4ae5f21b71616dc45ebee3229226f3997"
+platform = "apple-m4"
+system = "e3"
+role = "repetition"
+rep = 3
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep4-biscuit.csv"
+sha256 = "b5865bfb7091d69cd6c3008e8771aea1b3f7678ce4fa3e2960a33bf4bd332b09"
+platform = "apple-m4"
+system = "biscuit"
+role = "repetition"
+rep = 4
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep4-grant.csv"
+sha256 = "f640753345d5fe32ab77fe9ae703edede20e2bac6558cca103e3371104a4bf80"
+platform = "apple-m4"
+system = "grant1"
+role = "repetition"
+rep = 4
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep4-opa.csv"
+sha256 = "3bab0e86b7b0ba0303134452aa19a99638fc4266553741d44df96c01118872f0"
+platform = "apple-m4"
+system = "opa"
+role = "repetition"
+rep = 4
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e2/rep4-e2-replay.csv"
+sha256 = "8e8d8292ee1a91ed159d72b28ef51e3c19b3a04de0e1c255a4489ff5675f7bc7"
+platform = "apple-m4"
+system = "e2"
+role = "repetition"
+rep = 4
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e3/rep4-e3.csv"
+sha256 = "bba22a9a4d862c19b8db8a25a414784c320b0606044b740a4201a84275fb2b4a"
+platform = "apple-m4"
+system = "e3"
+role = "repetition"
+rep = 4
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep5-biscuit.csv"
+sha256 = "5b00d3f2ea84244b1ac0a1b1784c68b353341e86487ae4ed99620b57343def85"
+platform = "apple-m4"
+system = "biscuit"
+role = "repetition"
+rep = 5
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep5-grant.csv"
+sha256 = "7acba543a0fe88b964ba2843530eee12c1f104ea339c6429f1faf87932908612"
+platform = "apple-m4"
+system = "grant1"
+role = "repetition"
+rep = 5
+used_by = ["variability"]
+
+[[file]]
+path = "variability/rep5-opa.csv"
+sha256 = "fed5f5da30ae67a233d279e77b2645658d68eb0d0e1b7e16c09b77d547afae8b"
+platform = "apple-m4"
+system = "opa"
+role = "repetition"
+rep = 5
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e2/rep5-e2-replay.csv"
+sha256 = "a0d655bfd2e357ff895e7c9cd63cec1b841e22e8fe798112733b30ed3745b26f"
+platform = "apple-m4"
+system = "e2"
+role = "repetition"
+rep = 5
+used_by = ["variability"]
+
+[[file]]
+path = "variability-e3/rep5-e3.csv"
+sha256 = "08f65380b0f4990ea23135c642746dbae4f2ca9ddac6175eb79f088722dd4c36"
+platform = "apple-m4"
+system = "e3"
+role = "repetition"
+rep = 5
+used_by = ["variability"]

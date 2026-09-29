@@ -13,7 +13,6 @@ import glob
 import json
 import os
 import platform
-import socket
 import sys
 from datetime import datetime, timezone
 
@@ -29,7 +28,8 @@ def platform_stamp() -> dict:
     Rust bench reads so the three systems agree on host/cpu/sandbox labels."""
     return {
         "ts_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "host": os.environ.get("PCT_HOST", socket.gethostname()),
+        # Never the machine's hostname: PCT_HOST or the literal "anon".
+        "host": os.environ.get("PCT_HOST", "anon"),
         "os": platform.system().lower(),
         "arch": platform.machine(),
         "cpu": os.environ.get("PCT_CPU", "unknown"),

@@ -120,10 +120,13 @@ fn main() {
     let out = env::args().nth(1).unwrap_or_else(|| "results/e3-accum.csv".to_string());
 
     // platform stamp (same env contract as the E1 harness)
-    let host = env_or("PCT_HOST", &env_or("HOSTNAME", "unknown"));
+    // Never the machine's hostname: PCT_HOST or the literal "anon".
+    let host = env_or("PCT_HOST", "anon");
     let cpu = env_or("PCT_CPU", "unknown");
     let sandbox = env_or("PCT_SANDBOX", "true");
-    let runtime = env_or("PCT_RUNTIME", "rustc-1.96.1");
+    // The compiler that built this binary (build.rs); committed E3 CSVs carry
+    // the literal "rustc-1.96.1".
+    let runtime = env_or("PCT_RUNTIME", concat!("rustc-", env!("PCT_RUSTC_VERSION")));
     let ts = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
     let os = env::consts::OS;
     let arch = env::consts::ARCH;

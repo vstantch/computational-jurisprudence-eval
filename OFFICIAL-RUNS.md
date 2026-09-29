@@ -5,8 +5,11 @@ _The paper's numbers come from these runs. Sandbox CSVs (stamped `sandbox=true`)
 
 ```bash
 # toolchain
-brew install just toxiproxy            # rust via rustup (stable), python3.11+ assumed
-rustup default stable
+brew install just                     # rust via rustup, python3.11+ assumed
+rustup toolchain install 1.96.1       # the channel rust-toolchain.toml pins
+pip install -r python/requirements.txt # hashed lock (python/requirements.in lists the direct deps)
+# OPA 1.18.2 and toxiproxy 2.12.0 are NOT installed by hand: scripts/opa_e1.sh
+# fetches both into bin/ by exact version and checks their SHA-256.
 # quiet machine per the OOM-guard rule: Ollama/agents OFF, power connected,
 # no Time Machine backup running; keep the lid closed / display sleep off.
 ```
@@ -20,23 +23,33 @@ cd ~/projects/pct-eval
 export PCT_SANDBOX=false
 export PCT_CPU="Apple M2 Pro (10 cores)"        # adjust to the real chip/cores
 export PCT_N_ALLOW=100000                       # the plan's 10^5 (Mac default anyway)
+export PCT_DELAY_METHOD=toxiproxy               # REQUIRED for the paper's delay rows (see below)
+export PCT_HOST=mac-mini                        # label for rows and file names (default "anon")
 
 just verify        # correctness gate: 3-way agreement incl. crafted violations.
+                   # Needs the private x402 checkout (PCT_X402_SRC). Checks the
+                   # fixtures against workloads/SHA256SUMS; never regenerates them.
                    # MUST print PASS; benches refuse to run otherwise.
-just bench-e1      # gate + biscuit + grant@1 + OPA (local); ~30-60 min at 10^5
+just bench-e1      # gate + biscuit + grant@1 + OPA (local, +5 ms, +20 ms)
 ```
 
-Delay configs (+5 ms / +20 ms): the sandbox used the asyncio fallback proxy; on the Mac use toxiproxy for the paper (cleaner methodology statement):
+Delay configs (+5 ms / +20 ms): `scripts/opa_e1.sh bench` runs them after the
+local configuration. The method is chosen by `PCT_DELAY_METHOD`: `toxiproxy`
+puts an upstream latency toxic in front of OPA (the script starts
+`bin/toxiproxy-server` on 127.0.0.1 unless one already answers on :8474, and
+checks that it reports version 2.12.0); unset or any other value uses the
+asyncio fallback `python/delay_proxy.py`, which delays each relayed chunk in
+turn. Per commit 2b424a2, the official 2026-07-11 OPA run used toxiproxy. There is
+no `bench-delayed` mode, and the CSVs have no method column: the `config`
+column records only the target delay, so record the method with the run.
 
 ```bash
-toxiproxy-server &                              # then in a second shell:
-./scripts/opa_e1.sh bench-delayed toxiproxy      # creates proxies w/ 5ms and 20ms latency toxics
-# (if the script lacks the toxiproxy mode, run: ./scripts/opa_e1.sh bench
-#  with the fallback proxy — identical semantics, say so in the paper's methods)
-just plots
+just plots         # PNGs of the reference platform's official files (manifest)
 ```
 
-Outputs: `results/e1-*_<host>_<stamp>.csv` (sandbox=false), `plots/*.png`.
+Outputs: `results/e1-*_<PCT_HOST>_<stamp>.csv` (sandbox=false), `plots/*.png`.
+List every file that a table will use in `results/MANIFEST.toml` (path, sha256,
+platform, system, role) and run `python3 python/results_manifest.py check`.
 
 ## C. E2 — end-to-end capability-enforced payments (`~/projects/presidio-hardened-x402/tools`)
 

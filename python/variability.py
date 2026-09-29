@@ -12,6 +12,8 @@ freedom.
 Nothing here re-times anything: it only summarizes measured CSV rows.
 
 Usage: python3 python/variability.py results/variability [out.csv] [fanout]
+
+The default out.csv is tables/e1-variability.csv, never a file under results/.
 """
 
 from __future__ import annotations
@@ -52,7 +54,9 @@ def load(indir: str, fanout: str) -> dict:
 
 def main() -> None:
     indir = sys.argv[1] if len(sys.argv) > 1 else "results/variability"
-    out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(indir, "e1-variability.csv")
+    out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "tables", "e1-variability.csv")
+    os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     fanout = sys.argv[3] if len(sys.argv) > 3 else "1"
 
     runs = load(indir, fanout)

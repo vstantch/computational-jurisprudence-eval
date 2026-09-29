@@ -53,7 +53,7 @@ identical, the results, and the caveats are in
 pct-eval/
 ├── Cargo.toml / Cargo.lock        # Rust workspace; lockfile committed (pinned deps)
 ├── rust-toolchain.toml            # pins the toolchain (channel 1.96.1)
-├── justfile                       # gen / verify / bench-e1(-biscuit|-grant|-opa) / plots
+├── justfile                       # gen / verify(-public|-fixtures) / bench-e1(-public) / plots
 ├── crates/
 │   ├── workload-gen/              # THE canonical seeded generator (one source of truth)
 │   ├── e1-biscuit/                # Biscuit bench (bin + criterion bench) + verdicts
@@ -63,13 +63,20 @@ pct-eval/
 │   ├── grant_bench.py             # capability-grant@1 bench + verdicts
 │   ├── opa_bench.py               # OPA decision-latency client + verdicts
 │   ├── delay_proxy.py             # asyncio TCP delay proxy (toxiproxy fallback)
-│   ├── verify_gate.py             # 3-way correctness gate (fail-closed)
+│   ├── verify_gate.py             # 3-way correctness gate (fail-closed; private x402)
+│   ├── verify_gate_2way.py        # 2-way gate, Biscuit and OPA (public)
+│   ├── check_fixtures.py          # fixtures vs workloads/SHA256SUMS
+│   ├── results_manifest.py        # results/MANIFEST.toml loader + check
+│   ├── mkcrossplatform.py         # cross-platform E1 table (LaTeX)
+│   ├── mkvariability_table.py     # variability table (LaTeX)
+│   ├── variability.py             # per-configuration variability CSV
 │   ├── plot.py                    # one PNG per metric family
-│   └── requirements.txt           # pinned Python deps
+│   ├── requirements.in            # direct Python deps
+│   └── requirements.txt           # hashed, fully transitive lock (uv pip compile)
 ├── policies/capability.rego       # published Rego policy (same caveat semantics)
-├── scripts/opa_e1.sh              # fetch OPA, serve policy, run local/5ms/20ms
-├── workloads/                     # generated seeded fixtures (committed) + manifest
-├── results/                       # CSV per run (host+timestamp) + verdict JSONs
+├── scripts/opa_e1.sh              # fetch pinned OPA/toxiproxy, serve policy, run local/5ms/20ms
+├── workloads/                     # generated seeded fixtures (committed) + SHA256SUMS
+├── results/                       # CSV per run (PCT_HOST+timestamp), verdict JSONs, MANIFEST.toml
 └── plots/                         # generated PNGs
 ```
 
@@ -142,33 +149,92 @@ availability cost, not raw crypto speed. The Rego policy is published in full
 
 ## Re-running (macOS, the official path)
 
-Prereqs: Rust (via the pinned `rust-toolchain.toml`), Python 3.11, `just`,
-`curl`. The `capability-grant@1` artifact is imported from the sibling x402
-checkout — point `PCT_X402_SRC` at it (default `../presidio-hardened-x402/tools/src`).
+Prereqs: Rust (via the pinned `rust-toolchain.toml`), Python 3.11 or newer,
+`just`, `curl`. The official runs used CPython 3.11.15; the 2026-07-10 sandbox
+rows (`sandbox=true`) record CPython 3.10.12. The `capability-grant@1` artifact
+is imported from the sibling x402 checkout — point `PCT_X402_SRC` at it
+(default `../presidio-hardened-x402/tools/src`).
 
 ```bash
-pip install -r python/requirements.txt
+pip install -r python/requirements.txt   # hashed, fully transitive lock
 export PCT_X402_SRC=/path/to/presidio-hardened-x402/tools/src
 export PCT_CPU="Apple M-series"        # recorded verbatim in every CSV row
-# PCT_SANDBOX defaults to false on the Mac -> rows stamped official.
+export PCT_HOST=mac-mini               # row/file label; default "anon", never the hostname
+export PCT_DELAY_METHOD=toxiproxy      # the official delay method (default: asyncio fallback)
+# PCT_SANDBOX defaults to false under just -> rows stamped official.
 
-just gen           # generate + commit fixtures (defaults to 10^5 exercises/config)
 just verify        # 3-way correctness gate (fail-closed); required before timing
 just bench-e1      # gate, then Biscuit + grant@1 + OPA(local/5ms/20ms)
-just plots         # PNGs into plots/
+just plots         # PNGs of the reference platform's official files into plots/
 ```
 
-`scripts/opa_e1.sh` auto-selects the **darwin-arm64** OPA binary on the Mac and
-the linux-arm64 static binary in the sandbox. For the delay configs it uses the
-in-repo `python/delay_proxy.py`; substitute **toxiproxy** on the Mac by pointing
-`opa_bench.py`'s `OPA_PORT` at the toxiproxy listener (the CSV `config` column
-records which delay was in force either way).
+`just verify` checks the committed fixtures against `workloads/SHA256SUMS` and
+never regenerates them; `just gen` regenerates them explicitly (it overwrites
+`workloads/`, and depends on `PCT_N_ALLOW`), after which `just verify-fixtures`
+shows whether the output is byte-identical.
 
-**Sandbox reduced-count invocation** (what produced the committed indicative CSVs):
+`scripts/opa_e1.sh` downloads **OPA 1.18.2** for the platform (darwin-arm64,
+darwin-amd64, linux-arm64 or linux-amd64) into `bin/` by exact version and
+checks its SHA-256 on every run; a mismatch aborts. OPA runs with
+`--skip-version-check`, so it makes no outbound call at startup, and with its
+default log level (`info`) unless `PCT_OPA_LOG_LEVEL` is set. The script waits
+at most 15 s for port 8181 to be free and at most 15 s for OPA to become
+healthy, and fails otherwise.
+
+For the `+5ms`/`+20ms` configurations, `PCT_DELAY_METHOD` selects the method.
+`toxiproxy` puts an upstream latency toxic in front of OPA: the script fetches
+**toxiproxy 2.12.0** the same way (SHA-256 checked), starts it on 127.0.0.1
+unless one already answers on :8474, and requires that it reports 2.12.0.
+Unset or any other value uses the in-repo `python/delay_proxy.py` (asyncio,
+one-way delay on the request path, applied to each relayed chunk in turn). Per commit
+2b424a2, the official 2026-07-11 OPA run used toxiproxy. The CSV `config`
+column records the target delay, not the method.
+
+**Sandbox reduced-count invocation** (what produced the committed indicative
+CSVs, when `verify` still ran `gen`; today `PCT_N_ALLOW` affects only `just gen`,
+and `PCT_MAX_PER_CONFIG` caps the Biscuit and grant@1 streams):
 
 ```bash
 PCT_SANDBOX=true PCT_N_ALLOW=3000 PCT_OPA_LOCAL=500 PCT_OPA_DELAY=120 just bench-e1
 ```
+
+## Public verification (no private checkout)
+
+`capability-grant@1` is imported from the non-public x402 checkout, so the
+three-way gate (`just verify`) runs only on the owner's machine. Anyone can run
+the two-way gate and the public part of the sweep:
+
+```bash
+just verify-public     # fixtures hash check, then biscuit == OPA == expected
+just bench-e1-public   # verify-public, then Biscuit and OPA (local/5ms/20ms)
+```
+
+`verify-public` writes its verdict files to `target/gate/`, never over the
+committed `results/*-verdicts.json`. CI (`.github/workflows/verify.yml`) runs it
+and a short sweep on x86-64 and arm64 Linux for every push.
+
+## Which results back which table
+
+`results/MANIFEST.toml` lists every committed result file with its SHA-256,
+platform, system and role (`official`, `superseded`, `sandbox`, `repetition`,
+`gate-evidence`). The table generators read inputs through it and stop on any
+ambiguity (a platform with zero or several official files for a system), a
+changed file, or a file under `results/` the manifest does not list.
+`python3 python/results_manifest.py check` verifies the whole manifest.
+
+| generator | output | inputs (manifest) |
+|---|---|---|
+| `python/mkcrossplatform.py apple-m4 x86-cloud tables/crossplatform.tex` | cross-platform E1 table | official Biscuit and OPA files of both platforms |
+| `python/mkvariability_table.py [--out tables/variability.tex]` | run-to-run variability table | the five `repetition` files per system on apple-m4 |
+| `python/variability.py results/variability [out.csv]` | per-configuration variability CSV (default `tables/e1-variability.csv`) | `results/variability/rep*-*.csv` |
+| `python/plot.py --platform apple-m4 [plots]` | PNGs | official E1 files of one platform |
+
+The paper's main E1 table is generated in the paper repository from its own
+copy of the three official apple-m4 files; the manifest names the same files.
+`mkcrossplatform.py` takes its row labels and platform descriptions from the
+manifest and the OPA version from the CSVs' `runtime` column; it also accepts
+`--compare-dir DIR --compare-delay-method M` for a sweep that is not in the
+manifest.
 
 ---
 

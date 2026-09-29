@@ -19,7 +19,7 @@ MAX_DELAY="${3:-2000}"
 OUT="$ROOT/results/variability"
 mkdir -p "$OUT"
 
-export PCT_HOST="${PCT_HOST:-$(hostname)}"
+export PCT_HOST="${PCT_HOST:-anon}"
 export PCT_SANDBOX="${PCT_SANDBOX:-false}"
 export PCT_CPU="${PCT_CPU:-unknown}"
 export PCT_DELAY_METHOD="${PCT_DELAY_METHOD:-toxiproxy}"

@@ -17,7 +17,7 @@
 #   * host / os / arch / cpu
 #   * the sweep covers fanout 1 only, the configuration the article reports
 #   * the correctness gate is two-way (Biscuit, OPA), because grant@1's artifact
-#     is not public — see harness/verify_gate_2way.py
+#     is not public — see python/verify_gate_2way.py
 #
 # Usage: bash run-cloud-x86.sh /path/to/computational-jurisprudence-eval
 set -euo pipefail

@@ -1,0 +1,88 @@
+# Public verification on every push, on x86-64 and arm64 Linux:
+#   - results/MANIFEST.toml: every result file's SHA-256, nothing unlisted
+#   - the published tables regenerate byte-identically (tests/golden/)
+#   - the hashed Python lock installs
+#   - just verify-public (fixtures hash check + 2-way gate, Biscuit and OPA)
+#   - a short smoke sweep (reduced counts, toxiproxy), written outside results/
+# Every action is pinned by commit SHA; just is pinned by release checksum.
+name: verify
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify-public + smoke (${{ matrix.runner }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-24.04, just_target: x86_64-unknown-linux-musl, just_sha256: 4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d }
+          - { runner: ubuntu-24.04-arm, just_target: aarch64-unknown-linux-musl, just_sha256: 748237128c4c40cbdabc65e841d05ceba13cc23a91eaba395495894c1d9764df }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11.15"
+      - name: just 1.58.0 (SHA-256 pinned)
+        run: |
+          set -euo pipefail
+          f="just-1.58.0-${{ matrix.just_target }}.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$f" "https://github.com/casey/just/releases/download/1.58.0/$f"
+          echo "${{ matrix.just_sha256 }}  $RUNNER_TEMP/$f" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/bin" && tar -xzf "$RUNNER_TEMP/$f" -C "$RUNNER_TEMP/bin" just
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: Rust 1.96.1 (rust-toolchain.toml)
+        run: |
+          rustup toolchain install 1.96.1 --profile minimal
+          test "$(rustc --version | cut -d' ' -f2)" = "1.96.1"
+      - name: results manifest
+        run: python3 python/results_manifest.py check
+      - name: published tables regenerate byte-identically
+        run: |
+          set -euo pipefail
+          python3 python/mkcrossplatform.py apple-m4 x86-cloud "$RUNNER_TEMP/crossplatform.tex"
+          python3 python/mkvariability_table.py --out "$RUNNER_TEMP/variability.tex"
+          cmp "$RUNNER_TEMP/crossplatform.tex" tests/golden/crossplatform.tex
+          cmp "$RUNNER_TEMP/variability.tex" tests/golden/variability.tex
+      - name: hashed Python lock installs
+        run: |
+          python3 -m pip install --require-hashes -r python/requirements.txt
+          python3 -c "import cryptography, matplotlib, numpy; print('lock ok')"
+      - name: just verify-public
+        run: just verify-public
+      - name: smoke sweep (reduced counts, toxiproxy; not a measurement)
+        env:
+          PCT_DELAY_METHOD: toxiproxy
+          PCT_SANDBOX: "true"
+          PCT_MAX_PER_CONFIG: "2000"
+          PCT_OPA_LOCAL: "300"
+          PCT_OPA_DELAY: "30"
+          PCT_OPA_WARMUP: "10"
+        run: |
+          set -euo pipefail
+          mkdir -p target/smoke
+          just results=target/smoke bench-e1-public
+          python3 - <<'EOF'
+          import csv, glob, subprocess
+          want = "rustc-" + subprocess.check_output(["rustc", "--version"], text=True).split()[1]
+          rows = [r for p in glob.glob("target/smoke/e1-*.csv") for r in csv.DictReader(open(p))]
+          assert {r["host"] for r in rows} == {"anon"}, {r["host"] for r in rows}
+          assert {r["runtime"] for r in rows if r["system"] == "biscuit"} == {want}
+          assert {r["runtime"] for r in rows if r["system"] == "opa"} == {"opa-1.18.2"}
+          assert {r["config"] for r in rows if r["system"] == "opa"} == {"local", "5ms", "20ms"}
+          assert all("anon" in p for p in glob.glob("target/smoke/e1-*.csv"))
+          print(f"smoke: {len(rows)} rows, host=anon, runtime ok")
+          EOF
+      - name: results/ untouched
+        run: |
+          git diff --exit-code -- results
+          test -z "$(git status --porcelain -- results)"
+          python3 python/results_manifest.py check

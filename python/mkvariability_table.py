@@ -7,26 +7,36 @@ independent executions of each experiment were run (fresh process each time,
 fresh OPA server and toxiproxy proxies for E1). This script reduces them to
 mean / SD / CV / 95 % CI per quantity and emits the LaTeX table.
 
-Nothing is re-timed here; only measured CSV rows are summarized.
+Nothing is re-timed here; only measured CSV rows are summarized. The
+repetition files are resolved through results/MANIFEST.toml (role
+"repetition", platform apple-m4), which also checks their SHA-256.
 
-Usage: python3 mkvariability.py
+Usage: python3 python/mkvariability_table.py [--manifest M] [--out tables/variability.tex]
 """
 
 from __future__ import annotations
 
+import argparse
 import csv
-import glob
 import os
 import statistics
+import sys
 from pathlib import Path
 
-E1_DIR = Path.home() / "projects/pct-eval/results/variability"
-E3_DIR = Path.home() / "projects/pct-eval/results/variability-e3"
-E2_DIR = Path(
-    "/private/tmp/claude-501/-Users-vstantch-vstantch-research/"
-    "2b2166aa-c557-4463-988e-fb9c3b600f45/scratchpad/e2-variability"
-)
-OUT = Path(__file__).parent / "tables" / "variability.tex"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import results_manifest  # noqa: E402
+
+PLATFORM = "apple-m4"
+OUT = Path(__file__).resolve().parent.parent / "tables" / "variability.tex"
+
+
+def rep_files(m: results_manifest.Manifest, systems: tuple[str, ...]) -> list[str]:
+    """Verified repetition files for these systems, in path order."""
+    entries = [e for s in systems for e in m.select(PLATFORM, s, "repetition")]
+    reps = sorted(e["rep"] for e in entries if e["system"] == systems[0])
+    if reps != [1, 2, 3, 4, 5]:
+        raise SystemExit(f"expected repetitions 1..5 for {systems[0]}, found {reps}")
+    return [m.verified(e) for e in sorted(entries, key=lambda e: e["path"])]
 
 _T95 = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447,
         7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228}
@@ -49,9 +59,9 @@ def fmt(xs: list[float], unit_scale: float = 1.0, prec: int = 2) -> str:
 
 
 # ---------------------------------------------------------------- E1
-def load_e1(fanout: str = "1") -> dict:
+def load_e1(paths: list[str], fanout: str = "1") -> dict:
     runs: dict[tuple[str, str, int], list[float]] = {}
-    for path in sorted(glob.glob(str(E1_DIR / "rep*-*.csv"))):
+    for path in paths:
         with open(path) as f:
             for row in csv.DictReader(f):
                 if row.get("fanout") != fanout:
@@ -82,9 +92,9 @@ def e1_block(runs: dict) -> list[str]:
 
 
 # ---------------------------------------------------------------- E2
-def load_e2() -> dict:
+def load_e2(paths: list[str]) -> dict:
     runs: dict[tuple[int, str], list[float]] = {}
-    for path in sorted(glob.glob(str(E2_DIR / "rep*-e2-replay.csv"))):
+    for path in paths:
         with open(path) as f:
             rows = [r for r in f if not r.startswith("#")]
         for row in csv.DictReader(rows):
@@ -113,9 +123,9 @@ E3_ROWS = [
 ]
 
 
-def load_e3() -> dict:
+def load_e3(paths: list[str]) -> dict:
     runs: dict[tuple[str, str], list[float]] = {}
-    for path in sorted(glob.glob(str(E3_DIR / "rep*-e3.csv"))):
+    for path in paths:
         with open(path) as f:
             for row in csv.DictReader(f):
                 key = (row["operation"], row["batch_size"])
@@ -133,7 +143,14 @@ def e3_block(runs: dict) -> list[str]:
 
 
 def main() -> None:
-    e1, e2, e3 = load_e1(), load_e2(), load_e3()
+    ap = argparse.ArgumentParser(description="Build the variability table (LaTeX).")
+    ap.add_argument("--manifest", default=results_manifest.DEFAULT)
+    ap.add_argument("--out", default=str(OUT))
+    a = ap.parse_args()
+    m = results_manifest.Manifest(a.manifest)
+    e1 = load_e1(rep_files(m, ("biscuit", "grant1", "opa")))
+    e2 = load_e2(rep_files(m, ("e2",)))
+    e3 = load_e3(rep_files(m, ("e3",)))
     b1, b2, b3 = e1_block(e1), e2_block(e2), e3_block(e3)
     if not (b1 and b2 and b3):
         print(f"WARNING: incomplete blocks (E1 {len(b1)}, E2 {len(b2)}, E3 {len(b3)})")
@@ -170,9 +187,10 @@ def main() -> None:
         r"\end{tabular}",
         r"\end{table}",
     ]
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text("\n".join(lines) + "\n")
-    print(f"wrote {OUT}")
+    out = Path(a.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines) + "\n")
+    print(f"wrote {out}")
     print("\n".join(lines))
 
 

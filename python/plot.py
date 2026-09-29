@@ -1,7 +1,7 @@
 """Plot E1 results — one PNG per metric family, from the committed CSVs.
 
-Reads every results/e1-*.csv (biscuit, grant@1, OPA at local/5ms/20ms), and
-emits, per fanout:
+Reads one platform's official E1 CSVs via results/MANIFEST.toml (--platform),
+or a directory holding one e1-*.csv per system (--dir), and emits, per fanout:
   * latency_p50_vs_depth_f{N}.png   (log-y, all systems/configs)
   * latency_p99_vs_depth_f{N}.png
   * throughput_vs_depth_f{N}.png
@@ -9,13 +9,17 @@ emits, per fanout:
 
 All axes label the platform + sandbox flag pulled from the CSV rows so a plot is
 never mistaken for the official Mac-mini numbers.
+
+Usage: python3 python/plot.py (--platform apple-m4 | --dir DIR) [outdir]
 """
 
 from __future__ import annotations
 
+import argparse
 import csv
 import glob
 import os
+import sys
 from collections import defaultdict
 
 import matplotlib
@@ -23,14 +27,31 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import results_manifest  # noqa: E402
 
-def load_rows(results_dir: str) -> list[dict]:
-    rows = []
-    for path in sorted(glob.glob(os.path.join(results_dir, "e1-*.csv"))):
+
+def load_rows(paths: list[str]) -> list[dict]:
+    """Rows from these CSVs; two rows for the same (system, config, depth,
+    fanout) are an error, not a zig-zag line or a silent last-file-wins."""
+    rows, seen = [], {}
+    for path in paths:
         with open(path) as f:
             for r in csv.DictReader(f):
+                key = (r["system"], r["config"], r["depth"], r["fanout"])
+                if key in seen:
+                    raise SystemExit(f"ambiguous input: {key} in {seen[key]} and {path}")
+                seen[key] = path
                 rows.append(r)
     return rows
+
+
+def input_paths(args) -> list[str]:
+    if args.platform:
+        m = results_manifest.Manifest(args.manifest)
+        return [m.one(args.platform, s) for s in ("biscuit", "grant1", "opa")
+                if m.select(args.platform, s)]
+    return sorted(glob.glob(os.path.join(args.dir, "e1-*.csv")))
 
 
 def series_label(r: dict) -> str:
@@ -100,11 +121,16 @@ def plot_token(rows, outdir):
 
 
 def main():
-    import sys
-    results_dir = sys.argv[1] if len(sys.argv) > 1 else "results"
-    outdir = sys.argv[2] if len(sys.argv) > 2 else "plots"
+    ap = argparse.ArgumentParser(description="Plot E1 results, one PNG per metric.")
+    src = ap.add_mutually_exclusive_group(required=True)
+    src.add_argument("--platform", help="manifest platform, e.g. apple-m4")
+    src.add_argument("--dir", help="a directory with one e1-*.csv per system")
+    ap.add_argument("--manifest", default=results_manifest.DEFAULT)
+    ap.add_argument("outdir", nargs="?", default="plots")
+    args = ap.parse_args()
+    outdir = args.outdir
     os.makedirs(outdir, exist_ok=True)
-    rows = load_rows(results_dir)
+    rows = load_rows(input_paths(args))
     if not rows:
         print("no results CSVs found — run the benches first")
         return

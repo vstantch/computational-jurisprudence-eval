@@ -57,7 +57,7 @@ or extrapolated, and no existing result file was touched.
 | `biscuit-verdicts.json`, `opa-verdicts.json` | gate evidence |
 
 Note the OPA CSV is named from `hostname` (`vm`) rather than `PCT_HOST`, because `scripts/opa_e1.sh`
-builds its filename from `$(hostname)`. The **rows** carry `host=cj-cloud-x86` correctly; only the
+at this tag built its filename from `$(hostname)` (later changed to `PCT_HOST`, default `anon`). The **rows** carry `host=cj-cloud-x86` correctly; only the
 filename differs. Left as-is rather than renamed, so the file is exactly what the harness emitted.
 
 ### Headline: p50 microseconds, fanout 1

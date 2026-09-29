@@ -1,0 +1,35 @@
+\begin{table}[t]
+\centering
+\caption{\textbf{Measured (this work).} Run-to-run variability across five independent executions of each experiment, each in a fresh process (and, for E1, a fresh OPA server and freshly created \texttt{toxiproxy} proxies). Reported per quantity: number of executions, mean across executions, sample standard deviation, coefficient of variation, and the half-width of a 95\,\% confidence interval on the mean (Student-$t$, $R-1$ degrees of freedom). E1 repetitions use $10^4$ exercises per configuration and $2\times10^3$ for the injected-delay configurations; E2 repetitions replay the full 2{,}000-triple corpus; E3 repetitions use the same iteration counts as the official run. Units: microseconds for E1, milliseconds for E2 and E3.}
+\label{tab:variability}
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Quantity & $R$ & Mean & SD & CV (\%) & 95\,\% CI \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{E1: exercise-time verification latency ($\mu$s)}}\\
+Biscuit (Rust), p50, $d{=}1$ & 5 & 43.03 & 0.80 & 1.9 & $\pm$0.99 \\
+Biscuit (Rust), p50, $d{=}10$ & 5 & 316.87 & 13.13 & 4.1 & $\pm$16.31 \\
+capability-grant@1 (Python), p50, $d{=}1$ & 5 & 175.78 & 1.43 & 0.8 & $\pm$1.78 \\
+capability-grant@1 (Python), p50, $d{=}10$ & 5 & 1721.28 & 16.81 & 1.0 & $\pm$20.87 \\
+OPA / local, p50, $d{=}1$ & 5 & 110.47 & 0.45 & 0.4 & $\pm$0.56 \\
+OPA / local, p50, $d{=}10$ & 5 & 230.47 & 8.60 & 3.7 & $\pm$10.67 \\
+OPA / $+5$\,ms, p50, $d{=}1$ & 5 & 6441.38 & 116.36 & 1.8 & $\pm$144.46 \\
+OPA / $+5$\,ms, p50, $d{=}10$ & 5 & 6996.27 & 194.19 & 2.8 & $\pm$241.08 \\
+OPA / $+20$\,ms, p50, $d{=}1$ & 5 & 22005.56 & 54.77 & 0.2 & $\pm$67.99 \\
+OPA / $+20$\,ms, p50, $d{=}10$ & 5 & 22336.97 & 240.21 & 1.1 & $\pm$298.21 \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{E2: x402 payment path, per-stage latency (ms)}}\\
+Added latency p99, depth 1 & 5 & 0.461 & 0.018 & 3.9 & $\pm$0.022 \\
+Added latency p99, depth 2 & 5 & 0.690 & 0.031 & 4.5 & $\pm$0.038 \\
+Added latency p99, depth 4 & 5 & 1.010 & 0.032 & 3.1 & $\pm$0.039 \\
+Added latency p99, depth 6 & 5 & 1.404 & 0.033 & 2.3 & $\pm$0.041 \\
+Redaction stage p99, depth 1 & 5 & 6.376 & 0.167 & 2.6 & $\pm$0.208 \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{E3: accumulator revocation (ms)}}\\
+Non-membership verify (verifier) & 5 & 1.05 & 0.03 & 2.7 & $\pm$0.04 \\
+Witness update, $B{=}10^4$ (holder) & 5 & 86.69 & 0.44 & 0.5 & $\pm$0.54 \\
+$\Omega$ publication, $B{=}10^4$ (manager) & 5 & 2670.54 & 56.12 & 2.1 & $\pm$69.67 \\
+\bottomrule
+\end{tabular}
+\end{table}

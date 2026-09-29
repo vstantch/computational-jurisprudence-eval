@@ -2,6 +2,7 @@
 name = "e3-accumulator"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 description = "E3 (optional, cut-first) accumulator revocation microbenchmark — CRATE SKELETON ONLY. Nothing is wired; see src/lib.rs for the crate choice and rationale."
 
 [dependencies]

@@ -70,11 +70,14 @@ struct Plat {
 fn platform() -> Plat {
     Plat {
         ts: now_rfc3339(),
-        host: env_or("PCT_HOST", &env_or("HOSTNAME", "unknown")),
+        // Never the machine's hostname: PCT_HOST or the literal "anon".
+        host: env_or("PCT_HOST", "anon"),
         os: std::env::consts::OS.to_string(),
         arch: std::env::consts::ARCH.to_string(),
         cpu: env_or("PCT_CPU", "unknown"),
-        runtime: env_or("PCT_RUNTIME", "rustc-1.96.1"),
+        // The compiler that built this binary (build.rs), not a literal.
+        // CSVs committed before 2026-09 carry the literal "rustc-1.96.1".
+        runtime: env_or("PCT_RUNTIME", concat!("rustc-", env!("PCT_RUSTC_VERSION"))),
         sandbox: env_or("PCT_SANDBOX", "true"),
     }
 }
